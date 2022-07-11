@@ -53,10 +53,9 @@
 /******************************************************************************/
 /*                              PRIVATE DATA                                  */
 /******************************************************************************/
-bool boNetworkReady = false;
-SystemState_e systemState = POWER_ON_STATE;
-uint32_t byValueLuxFirst = 0;
-uint32_t byValueLuxSecond = 0;
+bool g_boNetworkReady = false;
+SystemState_e g_systemState = POWER_ON_STATE;
+
 
 /******************************************************************************/
 /*                            PRIVATE FUNCTIONS                               */
@@ -194,7 +193,7 @@ void Main_ButtonPressCallbackHandler(uint8_t byButton, ButtonState_e buttonPress
 			{
 				emberAfCorePrintln("SW2: 5 time");
 				toggleLed(LED1,ledRed, 2, 200, 200);
-				systemState = REBOOT_STATE;
+				g_systemState = REBOOT_STATE;
 				emberEventControlSetDelayMS(mainStateEventControl,3000);
 			}
 			break;
@@ -242,7 +241,7 @@ void mainStateEventHandler(void)
 {
 	emberEventControlSetInactive(mainStateEventControl);
 	EmberNetworkStatus nwkStatusCurrent;
-	switch (systemState) {
+	switch (g_systemState) {
 		case POWER_ON_STATE:
 			nwkStatusCurrent = emberAfNetworkState();
 			if(nwkStatusCurrent == EMBER_NO_NETWORK)
@@ -251,17 +250,17 @@ void mainStateEventHandler(void)
 				emberEventControlSetInactive(FindNetworkControl);
 				emberEventControlSetActive(FindNetworkControl);
 			}
-			systemState = IDLE_STATE;
+			g_systemState = IDLE_STATE;
 			break;
 		case REPORT_STATE:
-			systemState = IDLE_STATE;
+			g_systemState = IDLE_STATE;
 			SEND_ReportInfoHc();
 			break;
 		case IDLE_STATE:
 				emberAfCorePrintln("IDLE_STATE");
 			break;
 		case REBOOT_STATE:
-			systemState = IDLE_STATE;
+			g_systemState = IDLE_STATE;
 			EmberNetworkStatus networkStatus = emberAfNetworkState();
 			if (networkStatus != EMBER_NO_NETWORK) {
 				SendZigDevRequest();
@@ -288,12 +287,12 @@ void mainNetworkEventHandler(uint8_t byNetworkResult)
 		case NETWORK_HAS_PARENT:
 			emberAfCorePrintln("Network has parent");
 			toggleLed(LED1,ledPink,3,300,300);
-			boNetworkReady = true;
-			systemState = REPORT_STATE;
+			g_boNetworkReady = true;
+			g_systemState = REPORT_STATE;
 			emberEventControlSetDelayMS(mainStateEventControl, 1000);
 			break;
 		case NETWORK_JOIN_FAIL:
-			systemState = IDLE_STATE;
+			g_systemState = IDLE_STATE;
 			toggleLed(LED1,ledBlue,3,300,300);
 			emberAfCorePrintln("Network Join Fail");
 			emberEventControlSetDelayMS(mainStateEventControl, 1000);
@@ -302,21 +301,21 @@ void mainNetworkEventHandler(uint8_t byNetworkResult)
 			emberEventControlSetInactive(FindNetworkControl);
 			emberAfCorePrintln("Network Join Success");
 			toggleLed(LED1,ledPink,3,300,300);
-			boNetworkReady =true;
-			systemState = REPORT_STATE;
+			g_boNetworkReady =true;
+			g_systemState = REPORT_STATE;
 			emberEventControlSetDelayMS(mainStateEventControl, 1000);
 			break;
 		case NETWORK_LOST_PARENT:
 			emberAfCorePrintln("Network lost parent");
 			toggleLed(LED1,ledPink,3,300,300);
-			systemState = IDLE_STATE;
+			g_systemState = IDLE_STATE;
 			emberEventControlSetDelayMS(mainStateEventControl, 1000);
 			break;
 		case NETWORK_OUT_NETWORK:
-			if(boNetworkReady)
+			if(g_boNetworkReady)
 			{
 				toggleLed(LED1,ledRed,3,300,300);
-				systemState = REBOOT_STATE;
+				g_systemState = REBOOT_STATE;
 				emberEventControlSetDelayMS(mainStateEventControl, 3000);
 			}
 			break;
@@ -345,6 +344,8 @@ void FindNetworkHandler(void)
  */
 void ReadValueLightSensorControl(void)
 {
+	uint32_t byValueLuxFirst = 0;
+	uint32_t byValueLuxSecond = 0;
 	emberEventControlSetInactive(ReadValueLightSensorControl);
 	byValueLuxFirst = LightSensor_AdcPollingRead();
 	if(abs(byValueLuxSecond - byValueLuxFirst) > 30)
