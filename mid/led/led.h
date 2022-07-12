@@ -98,5 +98,5 @@ enum{
 void ledInit(void);
 void turnOffRBGLed(LedNumber ledIndex);
 void turnOnLed(LedNumber index, LedNumber LedColor);
-void toggleLed(LedNumber ledIndex, LedColor LedColor, i8_t byToggleTime, i32_t byOnTimeMs, i32_t byOffTimeMs);
+void toggleLed(LedNumber ledIndex, LedColor LedColor, i8_t byToggleTime, u32_t byOnTimeMs, i32_t byOffTimeMs);
 #endif /* SOURCE_MID_LED_H_ */

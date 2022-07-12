@@ -38,9 +38,9 @@ typedef struct {
   unsigned int        byPin;
   bool_t 			  boLedBlinkMode;
   LedColor  		  LedColor;
-  i32_t 			  byOnTime;
-  i32_t			  	  byOffTime;
-  i8_t			      byBlinkTime;
+  u32_t 			  byOnTime;
+  u32_t			  	  byOffTime;
+  u8_t			      byBlinkTime;
 } LedArray_t;
 
 #define TIMER_DIM_INIT                                                          	 \
@@ -149,7 +149,7 @@ void turnOnLed(LedNumber index, LedColor ledColor)
  * @param   ledNumber, ledColor_e, toggleTime, onTimeMs, offTimeMs
  * @retval  None
  */
-void toggleLed(LedNumber ledIndex, LedColor color, i8_t byToggleTime, i32_t byOnTimeMs, i32_t byOffTimeMs)
+void toggleLed(LedNumber ledIndex, LedColor color, u8_t byToggleTime, u32_t byOnTimeMs, u32_t byOffTimeMs)
 {
 	ledAction[ledIndex].boLedBlinkMode = LED_TOGGLE;
 	ledAction[ledIndex].LedColor = color;

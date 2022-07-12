@@ -52,7 +52,7 @@
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
 void Si7020_Init (void);
-bool_t si7020_Measure (i32_t *pBuffer, i8_t byCommand, i8_t byLengthData);
+bool_t si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData);
 i32_t si7020_MeasureHumi (void);
 i32_t Si7020_MeasureTemp (void);
 
