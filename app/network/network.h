@@ -35,11 +35,24 @@ typedef enum{
 	NETWORK_JOIN_SUCCESS,
 	NETWORK_LOST_PARENT,
 	NETWORK_OUT_NETWORK,
-}Network_Event_e;
-/* Function prototypes -----------------------------------------------*/
-typedef void (*networkEventHandler) (Network_Event_e networkEvent);
+}NetworkEvent;
+/******************************************************************************/
+/*                              PRIVATE DATA                                  */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            PRIVATE FUNCTIONS                               */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            EXPORTED FUNCTIONS                               */
+/******************************************************************************/
+typedef void (*networkEventHandler) (NetworkEvent networkEvent);
 void NETWORK_FindAndJoin(void);
-void joinNetworkEventHandler(void);
-void NETWORK_StopFindAndJoin(void);
 void networkInit(networkEventHandler networkResult);
+/******************************************************************************/
 #endif /* SOURCE_APP_NETWORK_NETWORK_H_ */

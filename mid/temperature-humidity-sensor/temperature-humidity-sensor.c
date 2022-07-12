@@ -26,10 +26,52 @@
 /******************************************************************************/
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
-#include <source/mid/temperature-humidity-sensor/temperature-humidity-sensor.h>
-#include "app/framework/include/af.h"
-#include <stdbool.h>
-#include "em_i2c.h"
+#include <app/framework/include/af.h>
+#include <em_i2c.h>
+#include "source/mid/temperature-humidity-sensor/temperature-humidity-sensor.h"
+/******************************************************************************/
+/*                     EXPORTED TYPES and DEFINITIONS                         */
+/******************************************************************************/
+
+#define I2C_GPIO							 gpioPortB
+#define I2C0_PIN_SDA			    		 	 1
+#define I2C0_PIN_SCL			    			 0
+#define SCAN_TEMP_AND_HUMI						10000
+
+/* I2C device address for si7020 */
+#define SI7020_ADDR            0x40
+
+/* Device ID value for si7020 */
+#define SI7020_DEVICE_ID       0x14
+
+/* si7020 Read Temperature Command */
+#define SI7020_READ_TEMP       0xE0
+
+/* si7020 Read RH Command */
+#define SI7020_READ_RH         0xE5
+
+/* si7020 ID */
+#define SI7020_READ_ID_ONE       0xFC
+#define SI7020_READ_ID_TWO       0xC9
+/******************************************************************************/
+/*                     EXPORTED TYPES and DEFINITIONS                         */
+/******************************************************************************/
+/******************************************************************************/
+/*                              PRIVATE DATA                                  */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            PRIVATE FUNCTIONS                               */
+/******************************************************************************/
+static void initI2C(void);
+/******************************************************************************/
+/*                            EXPORTED FUNCTIONS                              */
+/******************************************************************************/
+
 
 /******************************************************************************/
 /**
@@ -38,7 +80,7 @@
  * @param   None
  * @retval  None
  */
-void initI2C(void)
+static void initI2C(void)
 {
   CMU_ClockEnable(cmuClock_I2C0, true);
   CMU_ClockEnable(cmuClock_GPIO, true);
@@ -68,24 +110,24 @@ void initI2C(void)
 }
 
 /**
- * @func    Si7020_Init
- * @brief   Initialize Si7020
+ * @func    si7020_Init
+ * @brief   Initialize si7020
  * @param   None
  * @retval  None
  */
-void Si7020_Init (void){
+void si7020_Init (void){
 	I2C_TransferSeq_TypeDef    seq;
 	I2C_TransferReturn_TypeDef ret;
-	uint8_t                    i2c_read_data[3];	// detect ID: SI7020_DEVICE_ID  and checksum byte
-	uint8_t                    i2c_write_data[2];	// command Electronic ID 2nd Byte
+	i8_t                    i2c_read_data[3];	// detect ID: si7020_DEVICE_ID  and checksum byte
+	i8_t                    i2c_write_data[2];	// command Electronic ID 2nd Byte
 
 
 
-	seq.addr  = SI7020_ADDR << 1 ;  			//(Address Si7020: 0x40 << 1 for bit R/W)
+	seq.addr  = SI7020_ADDR << 1 ;  			//(Address si7020: 0x40 << 1 for bit R/W)
 	seq.flags = I2C_FLAG_WRITE_READ;
 	/* Select command to issue */
-	i2c_write_data[0] = SI7020_READ_ID_1;
-	i2c_write_data[1] = SI7020_READ_ID_2;
+	i2c_write_data[0] = SI7020_READ_ID_ONE;
+	i2c_write_data[1] = SI7020_READ_ID_TWO;
 	seq.buf[0].data   = i2c_write_data;
 	seq.buf[0].len    = 2;
 
@@ -102,26 +144,26 @@ void Si7020_Init (void){
 	emberAfCorePrintln (" Detect ret: %d",ret);
 	if ((ret != i2cTransferDone) | (i2c_read_data[0] != SI7020_DEVICE_ID)) {
 
-		emberAfCorePrintln (" Detect Si7020 failure!--Device Id:%d ",i2c_read_data[0]);
+		emberAfCorePrintln (" Detect si7020 failure!--Device Id:%d ",i2c_read_data[0]);
 
 	}
-	emberAfCorePrintln (" Detect Si7020 success! ");
+	emberAfCorePrintln (" Detect si7020 success! ");
 }
 
 
 /**
- * @func    Si7020_Measure
+ * @func    si7020_Measure
  * @brief   Measure
  * @param   *buffer, command
  * @retval  Retval
  */
-bool Si7020_Measure (uint32_t *pBuffer, uint8_t byCommand, uint8_t byLengthData){
+bool_t si7020_Measure (i32_t *pBuffer, i8_t byCommand, i8_t byLengthData){
 	I2C_TransferSeq_TypeDef    seq;
 	I2C_TransferReturn_TypeDef retVal;
-	uint8_t                    i2c_read_data[byLengthData];  		//i2c_read_data[0]: MSB		i2c_read_data[1]: LSB
-	uint8_t                    i2c_write_data[1];
+	i8_t                    i2c_read_data[byLengthData];  		//i2c_read_data[0]: MSB		i2c_read_data[1]: LSB
+	i8_t                    i2c_write_data[1];
 
-	seq.addr  = SI7020_ADDR << 1; //(Address Si7020: 0x40 << 1 for bit R/W)
+	seq.addr  = SI7020_ADDR << 1; //(Address si7020: 0x40 << 1 for bit R/W)
 	seq.flags = I2C_FLAG_WRITE_READ;
 	/* Select command to issue */
 	i2c_write_data[0] = byCommand;			// command
@@ -138,33 +180,33 @@ bool Si7020_Measure (uint32_t *pBuffer, uint8_t byCommand, uint8_t byLengthData)
 		retVal = I2C_Transfer(I2C0);
 	}
 
-	*pBuffer = ((uint32_t) i2c_read_data[0] << 8) + (i2c_read_data[1]);   // // RH_CODE (MSB << 8) + LSB
+	*pBuffer = ((i32_t) i2c_read_data[0] << 8) + (i2c_read_data[1]);   // // RH_CODE (MSB << 8) + LSB
 	return true;
 }
 
 /**
- * @func    Si7020_MeasureTempAndHumi
+ * @func    si7020_MeasureTempAndHumi
  * @brief   Measure Humi
  * @param   *humiData
  * @retval  Humi
  */
-uint32_t Si7020_MeasureHumi (void){
-	uint32_t humiData;
-	boolean retVal = Si7020_Measure (&humiData, SI7020_READ_RH, 2);
+i32_t si7020_MeasureHumi (void){
+	i32_t humiData;
+	bool_t retVal = si7020_Measure (&humiData, SI7020_READ_RH, 2);
 	if (retVal)
 		humiData = ( (((humiData) * 12500) >> 16) - 600 )/100; // Humi = ((Humi * 2500)/(0xFFu +1) - 600)/100
 	return humiData;
 }
 
 /**
- * @func    Si7020_MeasureTempAndHumi
+ * @func    si7020_MeasureTempAndHumi
  * @brief   Measure Temp
  * @param   *tempData
  * @retval  Temp
  */
-uint32_t Si7020_MeasureTemp (void){
-	uint32_t tempData;
-	boolean retVal = Si7020_Measure (&tempData, SI7020_READ_TEMP, 2);
+i32_t si7020_MeasureTemp (void){
+	i32_t tempData;
+	bool_t retVal = si7020_Measure (&tempData, SI7020_READ_TEMP, 2);
 	if (retVal)
 		tempData = ( (((tempData) * 17572) >> 16) - 4685 )/100; // Temp = ((Temp * 17572)/(0xFFu +1) - 4685)/100
 	return tempData;

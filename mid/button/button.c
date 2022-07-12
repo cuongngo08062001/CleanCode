@@ -27,48 +27,70 @@
 /******************************************************************************/
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
-#include <source/mid/button/button.h>
-#include "app/framework/include/af.h"
-
+#include <app/framework/include/af.h>
+#include "source/mid/button/button.h"
 /******************************************************************************/
 /*                              CONTROL EVENTS                    	 		  */
 /******************************************************************************/
 
 EmberEventControl buttonPressAndHoldEventControl;
 EmberEventControl buttonReleaseEventControl;
+/******************************************************************************/
+/*                     EXPORTED TYPES and DEFINITIONS                         */
+/******************************************************************************/
+#define BUTTON_COUNT					2
+#define GPIO_DOUT						0
+#define BUTTON_DEBOUNCE					5
+#define BUTTON_CHECK_HOLD_CYCLES_MS		200
+#define BUTTON_CHECK_RELEASE_MS			500
+
+#define HOLD_TIME_MIN					5
+
+typedef struct {
+  GPIO_Port_TypeDef		GPIO_Port;
+  unsigned int			byPin;
+  bool_t				boState;
+  u8_t					byPressCount;
+  u8_t					byHoldTime;
+  bool_t				boRelease;
+  bool_t				boPress;
+  bool_t               boIsHolding;
+} Buttonx_t;
 
 /******************************************************************************/
 /*                              PRIVATE DATAs                                 */
 /******************************************************************************/
-BUTTON_holdingEvent_t ButtonHoldingCallbackFunc = NULL;
-BUTTON_pressEvent_t ButttonPressAndHoldingCallbackFunc = NULL;
+pButtonHoldingEvent_t ButtonHoldingCallbackFunc = NULL;
+pButtonPressEvent_t ButttonPressAndHoldingCallbackFunc = NULL;
 Buttonx_t buttonArray[BUTTON_COUNT] = BUTTON_INIT;
-
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
 /******************************************************************************/
 /*                              EXPORTED FUNTIONS                             */
 /******************************************************************************/
 /******************************************************************************/
 /*                              PRIVATE FUNTIONS                              */
 /******************************************************************************/
-void buttonPressAndHoldEventHandle(void);
-void buttonReleaseEventHandle(void);
-static void 	halInternalButtonIsr(uint8_t pin);
-static uint8_t 	getButtonIndex(uint8_t pin);
-static void 	resetButtonParameter(uint8_t index);
-
+static void buttonPressAndHoldEventHandle(void);
+static void buttonReleaseEventHandle(void);
+static void halInternalButtonIsr(u8_t pin);
+static u8_t getButtonIndex(u8_t pin);
+static void resetButtonParameter(u8_t byIndex);
 /******************************************************************************/
+
 /*
  * @func	buttonInit
  * @brief	Initialize Button
- * @param	holdingHandle, pressHandler
+ * @param	ButtonHoding, ButtonPress
  * @retval	None
  */
-void buttonInit(BUTTON_holdingEvent_t holdingHandle,BUTTON_pressEvent_t pressHandler)
+void buttonInit(pButtonHoldingEvent_t ButtonHoding,pButtonPressEvent_t ButtonPress)
 {
   GPIOINT_Init();
 
-  CMU_ClockEnable(cmuClock_GPIO, true);
-  uint8_t i;
+  CMU_ClockEnable(cmuClock_GPIO, TRUE);
+  u8_t i;
   for ( i = 0; i < BUTTON_COUNT; i++ ) {
     /* Configure pin as input */
     GPIO_PinModeSet(buttonArray[i].GPIO_Port,
@@ -82,13 +104,13 @@ void buttonInit(BUTTON_holdingEvent_t holdingHandle,BUTTON_pressEvent_t pressHan
     GPIO_ExtIntConfig(buttonArray[i].GPIO_Port,
                       buttonArray[i].byPin,
                       buttonArray[i].byPin,
-                      true,
-                      true,
-                      true);
+                      TRUE,
+                      TRUE,
+                      TRUE);
   }
 
-  ButtonHoldingCallbackFunc=holdingHandle;
-  ButttonPressAndHoldingCallbackFunc=pressHandler;
+  ButtonHoldingCallbackFunc=ButtonHoding;
+  ButttonPressAndHoldingCallbackFunc=ButtonPress;
 
 }
 /*
@@ -97,47 +119,47 @@ void buttonInit(BUTTON_holdingEvent_t holdingHandle,BUTTON_pressEvent_t pressHan
  * @param	pin
  * @retval	None
  */
-void halInternalButtonIsr(uint8_t pin)
+void halInternalButtonIsr(u8_t byPin)
 {
-  uint8_t buttonStateNow;
-  uint8_t buttonStatePrev;
-  uint32_t debounce;
-  uint8_t buttonIndex;
+  u8_t buttonStateNow;
+  u8_t buttonStatePrev;
+  u32_t debounce;
+  u8_t buttonbyIndex;
 
-  buttonIndex = getButtonIndex(pin);
-  // check valid index
-  if(buttonIndex==-1)
+  buttonbyIndex = getButtonbyIndex(byPin);
+  // check valid byIndex
+  if(buttonbyIndex==-1)
 	  return;
 
-  buttonStateNow = GPIO_PinInGet(buttonArray[buttonIndex].GPIO_Port, buttonArray[buttonIndex].byPin);
+  buttonStateNow = GPIO_PinInGet(buttonArray[buttonbyIndex].GPIO_Port, buttonArray[buttonbyIndex].byPin);
   for ( debounce = 0;
         debounce < BUTTON_DEBOUNCE;
         debounce = (buttonStateNow == buttonStatePrev) ? debounce + 1 : 0 ) {
     buttonStatePrev = buttonStateNow;
-    buttonStateNow = GPIO_PinInGet(buttonArray[buttonIndex].GPIO_Port, buttonArray[buttonIndex].byPin);
+    buttonStateNow = GPIO_PinInGet(buttonArray[buttonbyIndex].GPIO_Port, buttonArray[buttonbyIndex].byPin);
   }
 
-  buttonArray[buttonIndex].boState = buttonStateNow;
+  buttonArray[buttonbyIndex].boState = buttonStateNow;
 
   if(buttonStateNow == BUTTON_PRESS)
   {
-	  buttonArray[buttonIndex].byPressCount++;
-	  if(buttonArray[buttonIndex].boPress != true)
+	  buttonArray[buttonbyIndex].byPressCount++;
+	  if(buttonArray[buttonbyIndex].boPress != TRUE)
 	  {
 		  emberEventControlSetActive(buttonPressAndHoldEventControl);
 	  }
 
-	  buttonArray[buttonIndex].boIsHolding=false;
-	  buttonArray[buttonIndex].byHoldTime=0;
-	  buttonArray[buttonIndex].boPress = true;
-	  buttonArray[buttonIndex].boRelease = false;
+	  buttonArray[buttonbyIndex].boIsHolding=FALSE;
+	  buttonArray[buttonbyIndex].byHoldTime=0;
+	  buttonArray[buttonbyIndex].boPress = TRUE;
+	  buttonArray[buttonbyIndex].boRelease = FALSE;
 
   }
   else
   {
 
-	  buttonArray[buttonIndex].boRelease = true;
-	  buttonArray[buttonIndex].boPress = false;
+	  buttonArray[buttonbyIndex].boRelease = TRUE;
+	  buttonArray[buttonbyIndex].boPress = FALSE;
 	  emberEventControlSetInactive(buttonReleaseEventControl);
 	  emberEventControlSetDelayMS(buttonReleaseEventControl,BUTTON_CHECK_RELEASE_MS);
   }
@@ -152,16 +174,16 @@ void halInternalButtonIsr(uint8_t pin)
 void buttonPressAndHoldEventHandler(void)
 {
 	emberEventControlSetInactive(buttonPressAndHoldEventControl);
-	bool holdTrigger =false;
-	for(int i=0; i<BUTTON_COUNT; i++)
+	bool_t boHoldTrigger =FALSE;
+	for(i8_t i=0; i < BUTTON_COUNT; i++)
 	{
-		if(buttonArray[i].boPress ==true)
+		if(buttonArray[i].boPress ==TRUE)
 		{
-			holdTrigger = true;
+			boHoldTrigger = TRUE;
 			buttonArray[i].byHoldTime++;
 			if(buttonArray[i].byHoldTime>=5)
 			{
-				buttonArray[i].boIsHolding=true;
+				buttonArray[i].boIsHolding=TRUE;
 				buttonArray[i].byPressCount=0;
 			}
 
@@ -174,26 +196,26 @@ void buttonPressAndHoldEventHandler(void)
 			}
 		}
 	}
-	if(holdTrigger == true)
+	if(boHoldTrigger == TRUE)
 		emberEventControlSetDelayMS(buttonPressAndHoldEventControl,BUTTON_CHECK_HOLD_CYCLES_MS);
 }
 
 /*
  * @func	buttonReleaseEventHandle
  * @brief	Event Button Handler
- * @param	button, holdingHandler
+ * @param	button, ButtonHodingr
  * @retval	None
  */
 void buttonReleaseEventHandler(void)
 {
 	emberEventControlSetInactive(buttonReleaseEventControl);
-	for(int i=0; i<BUTTON_COUNT; i++)
+	for(i8_t i=0; i<BUTTON_COUNT; i++)
 	{
-		if(buttonArray[i].boRelease == true)
+		if(buttonArray[i].boRelease == TRUE)
 		{
 			if(ButttonPressAndHoldingCallbackFunc != NULL)
 			{
-				if(buttonArray[i].boIsHolding==false)
+				if(buttonArray[i].boIsHolding==FALSE)
 				{
 					ButttonPressAndHoldingCallbackFunc(i, buttonArray[i].byPressCount >= PRESS_MAX ? UNKNOWN:buttonArray[i].byPressCount);
 				}else
@@ -210,30 +232,30 @@ void buttonReleaseEventHandler(void)
 /*
  * @func	resetButtonParameter
  * @brief	Reset parameter
- * @param	index
+ * @param	byIndex
  * @retval	None
  */
-static void resetButtonParameter(uint8_t index)
+static void resetButtonParameter(u8_t byIndex)
 {
-	buttonArray[index].byHoldTime = 0;
-	buttonArray[index].byPressCount	= 0;
-	buttonArray[index].boPress = false;
-	buttonArray[index].boRelease = false;
-	buttonArray[index].boState = 0;
-	buttonArray[index].boIsHolding = false;
+	buttonArray[byIndex].byHoldTime = 0;
+	buttonArray[byIndex].byPressCount	= 0;
+	buttonArray[byIndex].boPress = FALSE;
+	buttonArray[byIndex].boRelease = FALSE;
+	buttonArray[byIndex].boState = 0;
+	buttonArray[byIndex].boIsHolding = FALSE;
 }
 
 /*
- * @func	getButtonIndex
+ * @func	getButtonbyIndex
  * @brief	get number button
  * @param	pin
  * @retval	None
  */
-static uint8_t getButtonIndex(uint8_t pin)
+static u8_t getButtonIndex(u8_t byPin)
 {
-	for(int i=0; i<BUTTON_COUNT; i++)
+	for(i8_t i=0; i < BUTTON_COUNT; i++)
 	{
-		if(buttonArray[i].byPin == pin)
+		if(buttonArray[i].byPin == byPin)
 			return i;
 	}
 	return -1;

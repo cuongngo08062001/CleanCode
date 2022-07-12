@@ -26,19 +26,37 @@
 /******************************************************************************/
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
-#include <source/app/receive/receive.h>
-#include <source/mid/led/led.h>
-#include <source/mid/led/led.h>
-#include <source/app/send/send.h>
-#include "cluster-id.h"
-#include "app/framework/include/af.h"
+#include <cluster-id.h>
+#include <app/framework/include/af.h>
+#include "source/mid/led/led.h"
+#include "source/app/send/send.h"
+#include "source/app/receive/receive.h"
+/******************************************************************************/
+/*                              PRIVATE DATA                                  */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            PRIVATE FUNCTIONS                               */
+/******************************************************************************/
+i8_t checkBindingTable(i8_t byLocalEndpoint);
+static static bool_t emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd);
+static static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCmd);
+static static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd);
+/******************************************************************************/
+/*                            EXPORTED FUNCTIONS                               */
+/******************************************************************************/
+
 /**
  * @func    emberAfPreCommandReceivedCallback
  * @brief   Process Command Received
  * @param   EmberAfClusterCommand
- * @retval  boolean
+ * @retval  static bool_tean
  */
-boolean emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd)
+static bool_t emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd)
 {
 	if(clusterCmd->clusterSpecific)
 	{
@@ -64,7 +82,7 @@ boolean emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd)
  * @param   EmberAfIncomingMessage
  * @retval  None
  */
-boolean emberAfPreMessageReceivedCallback(EmberAfIncomingMessage* incommingMessage)
+static bool_t emberAfPreMessageReceivedCallback(EmberAfIncomingMessage* incommingMessage)
 {
 	if(incommingMessage->apsFrame->clusterId == ACTIVE_ENDPOINTS_RESPONSE)
 	{
@@ -80,7 +98,7 @@ boolean emberAfPreMessageReceivedCallback(EmberAfIncomingMessage* incommingMessa
  * @param   EmberAfClusterCommand
  * @retval  None
  */
-bool RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCmd)
+static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCmd)
 {
 	uint8_t commandID = clusterCmd->commandId;
 	uint8_t endPoint  = clusterCmd->apsFrame -> destinationEndpoint;
@@ -106,19 +124,19 @@ bool RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCmd)
 						if(level >=80)
 						{
 							emberAfCorePrintln("LED GREEN");
-							turnOnLed(LED1, ledGreen);
+							turnOnLed(LED_ONE, LED_GREEN);
 						}else if(level>=40)
 						{
 							emberAfCorePrintln("LED RED");
-							turnOnLed(LED1, ledRed);
+							turnOnLed(LED_ONE, LED_RED);
 						}else if(level>0)
 						{
 							emberAfCorePrintln("LED BLUE");
-							turnOnLed(LED1, ledBlue);
+							turnOnLed(LED_ONE, LED_BLUE);
 						}else
 						{
 							emberAfCorePrintln("turn 0ff");
-							turnOffRBGLed(LED1);
+							turnOffRBGLed(LED_ONE);
 						}
 
 					}
@@ -134,9 +152,9 @@ bool RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCmd)
  * @func    RECEIVE_HandleOnOffCluster
  * @brief   Handler On/Off command
  * @param   EmberAfClusterCommand
- * @retval  bool
+ * @retval  static bool_t
  */
-bool RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
+static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 {
 	uint8_t commandID = clusterCmd->commandId;
 	uint8_t localEndpoint = clusterCmd ->apsFrame -> destinationEndpoint;
@@ -153,7 +171,7 @@ bool RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 			case EMBER_INCOMING_UNICAST:
 				if(localEndpoint == 1)
 				{
-				turnOffRBGLed(LED1);
+				turnOffRBGLed(LED_ONE);
 				SEND_OnOffStateReport(localEndpoint, LED_OFF);
 				emberAfCorePrintln("check: %d",checkBindingTable(localEndpoint));
 					if(checkBindingTable(localEndpoint) >= 1)
@@ -164,14 +182,14 @@ bool RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 				}
 				if(localEndpoint == 2)
 				{
-					turnOffRBGLed(LED2);
+					turnOffRBGLed(LED_TWO);
 					SEND_OnOffStateReport(localEndpoint, LED_OFF);
 				}
 				break;
 			case EMBER_INCOMING_MULTICAST:
 				emberAfCorePrintln("Multicast");
-				turnOnLed(LED1, ledOff);
-				turnOnLed(LED2, ledOff);
+				turnOnLed(LED_ONE, LED_OFF);
+				turnOnLed(LED_TWO, LED_OFF);
 				break;
 			default:
 				break;
@@ -185,7 +203,7 @@ bool RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 			case EMBER_INCOMING_UNICAST:
 				if(localEndpoint == 1)
 				{
-					turnOnLed(LED1, ledBlue);
+					turnOnLed(LED_ONE, LED_BLUE);
 					SEND_OnOffStateReport(localEndpoint, LED_ON);
 					if(checkBindingTable(localEndpoint) >= 1)
 					{
@@ -194,13 +212,13 @@ bool RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 				}
 				if(localEndpoint == 2)
 				{
-					turnOnLed(LED2, ledBlue);
+					turnOnLed(LED_TWO, LED_BLUE);
 					SEND_OnOffStateReport(localEndpoint, LED_ON);
 				}
 				break;
 			case EMBER_INCOMING_MULTICAST:
 				emberAfCorePrintln("Multicast");
-				turnOnLed(LED2, ledGreen);
+				turnOnLed(LED_TWO, LED_GREEN);
 				break;
 			default:
 				break;

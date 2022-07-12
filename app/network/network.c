@@ -26,8 +26,8 @@
 /******************************************************************************/
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
-#include <source/app/network/network.h>
-#include "app/framework/include/af.h"
+#include <app/framework/include/af.h>
+#include "source/app/network/network.h"
 /******************************************************************************/
 /*                            EVENTS CONTROL                            	  */
 /******************************************************************************/
@@ -35,8 +35,21 @@ EmberEventControl joinNetworkEventControl;
 /******************************************************************************/
 /*                              PRIVATE DATA                                  */
 /******************************************************************************/
-uint32_t bytimeFindAndJoin = 0;
+/******************************************************************************/
+/*                              PRIVATE DATA                                  */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            PRIVATE FUNCTIONS                               */
+/******************************************************************************/
+i32_t bytimeFindAndJoin = 0;
 networkEventHandler networkEventHandle = NULL;
+static void joinNetworkEventHandler(void);
+static void NETWORK_StopFindAndJoin(void);
 /******************************************************************************/
 /*
  * @function 			: Network_Init
@@ -79,7 +92,7 @@ void NETWORK_FindAndJoin(void)
  *
  * @return value		: None
  */
-void NETWORK_StopFindAndJoin(void)
+static void NETWORK_StopFindAndJoin(void)
 {
 	emberAfPluginNetworkSteeringStop();
 }
@@ -94,7 +107,7 @@ void NETWORK_StopFindAndJoin(void)
  *
  * @return value		: None
  */
-void joinNetworkEventHandler(void)
+static void joinNetworkEventHandler(void)
 {
 	emberEventControlSetInactive(joinNetworkEventControl);
 
@@ -115,7 +128,7 @@ void joinNetworkEventHandler(void)
  *
  * @return value		: True or false
  */
-boolean emberAfStackStatusCallback(EmberStatus networkStatus)
+bool_t emberAfStackStatusCallback(EmberStatus networkStatus)
 {
 	emberAfCorePrintln("emberAfStackStatusCallback\n");
 

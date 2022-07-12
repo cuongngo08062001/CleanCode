@@ -27,11 +27,11 @@
 /******************************************************************************/
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
-#include "app/framework/include/af.h"
+#include <app/framework/include/af.h>
 #include <math.h>
-#include <source/mid/kalman-filter/kalman-filter.h>
-#include <source/mid/light-sensor/light-sensor.h>
-#include "em_iadc.h"
+#include "source/mid/kalman-filter/kalman-filter.h"
+#include <em_iadc.h>
+#include "source/mid/light-sensor/light-sensor.h"
 /******************************************************************************/
 /*                     EXPORTED TYPES and DEFINITIONS                         */
 /******************************************************************************/
@@ -40,10 +40,26 @@
 
 #define IADC_INPUT_0_BUS          CDBUSALLOC
 #define IADC_INPUT_0_BUSALLOC     GPIO_CDBUSALLOC_CDEVEN0_ADC0
+#define CLK_SRC_ADC_FREQ          1000000 // CLK_SRC_ADC
+#define CLK_ADC_FREQ              10000 // CLK_ADC - 10MHz max in normal mode
 /******************************************************************************/
 /*                              CONTROL EVENTS                    	 		  */
 /******************************************************************************/
 EmberEventControl readValueSensorLightControl;
+/******************************************************************************/
+/*                              PRIVATE DATA                                  */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            PRIVATE FUNCTIONS                               */
+/******************************************************************************/
+/******************************************************************************/
+/*                            EXPORTED FUNCTIONS                              */
+/******************************************************************************/
 
 /******************************************************************************/
 /**
@@ -52,7 +68,7 @@ EmberEventControl readValueSensorLightControl;
  * @param   None
  * @retval  None
  */
-void LDRInit(void)
+void lightSensor_Init(void)
 {
 	// Declare init structs
 	  IADC_Init_t init = IADC_INIT_DEFAULT;
@@ -124,12 +140,12 @@ void LDRInit(void)
  * @param  None
  * @retval None
  */
-uint32_t readAdcPolling_LightSensor(void)
+i32_t readAdcPolling_LightSensorHandler(void)
 {
-	volatile uint32_t byRegistor;
-	volatile uint32_t byLux = 0;
-	uint32_t byValueADC=0;
-	uint32_t byKalman_Light=0;
+	volatile i32_t byRegistor;
+	volatile i32_t byLux = 0;
+	i32_t byValueADC=0;
+	i32_t byKalman_Light=0;
 	emberEventControlSetInactive(readValueSensorLightControl);
 	IADC_Result_t iadcResult;
 	// Start IADC conversion

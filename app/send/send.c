@@ -28,11 +28,29 @@
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
 #include <source/app/receive/receive.h>
-#include <source/app/send/send.h>
+
 #include PLATFORM_HEADER
-#include "stack/include/ember.h"
-#include "app/framework/include/af.h"
-#include "zigbee-framework/zigbee-device-common.h"
+#include <stack/include/ember.h>
+#include <app/framework/include/af.h>
+#include <zigbee-framework/zigbee-device-common.h>
+#include "source/app/send/send.h"
+/******************************************************************************/
+/*                     EXPORTED TYPES and DEFINITIONS                         */
+/******************************************************************************/
+/******************************************************************************/
+/*                              PRIVATE DATA                                  */
+/******************************************************************************/
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            PRIVATE FUNCTIONS                               */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            EXPORTED FUNCTIONS                              */
+/******************************************************************************/
 
 /******************************************************************************/
 /**
@@ -41,9 +59,9 @@
  * @param   source, destination, address
  * @retval  None
  */
-static void SEND_SendCommandUnicast(uint8_t bySourceEndpoint,
-							 uint8_t byDestinationEndpoint,
-							 uint8_t byIndexOrDestination)
+static void SEND_SendCommandUnicast(i8_t bySourceEndpoint,
+							 i8_t byDestinationEndpoint,
+							 i8_t byIndexOrDestination)
 {
 	emberAfSetCommandEndpoints(bySourceEndpoint, bySourceEndpoint);
 	(void) emberAfSendCommandUnicast(EMBER_OUTGOING_DIRECT, byIndexOrDestination);
@@ -58,16 +76,16 @@ static void SEND_SendCommandUnicast(uint8_t bySourceEndpoint,
  */
 static void SEND_FillBufferGlobalCommand(EmberAfClusterId clusterID,
 								  EmberAfAttributeId attributeID,
-								  uint8_t byGlobalCommand,
-								  uint8_t* pValue,
-								  uint8_t byLength,
-								  uint8_t byDataType)
+								  i8_t byGlobalCommand,
+								  i8_t* pValue,
+								  i8_t byLength,
+								  i8_t byDataType)
 {
-	uint8_t data[MAX_DATA_COMMAND_SIZE];
-	data[0] = (uint8_t)(attributeID & 0x00FF);
-	data[1] = (uint8_t)((attributeID & 0xFF00)>>8);
+	i8_t data[MAX_DATA_COMMAND_SIZE];
+	data[0] = (i8_t)(attributeID & 0x00FF);
+	data[1] = (i8_t)((attributeID & 0xFF00)>>8);
 	data[2] = EMBER_SUCCESS;
-	data[3] = (uint8_t)byDataType;
+	data[3] = (i8_t)byDataType;
 	memcpy(&data[4], pValue, pValue);
 
 	(void) emberAfFillExternalBuffer((ZCL_GLOBAL_COMMAND | ZCL_FRAME_CONTROL_CLIENT_TO_SERVER | ZCL_DISABLE_DEFAULT_RESPONSE_MASK),
@@ -87,9 +105,9 @@ static void SEND_FillBufferGlobalCommand(EmberAfClusterId clusterID,
  */
 void SEND_ReportInfoHc(void)
 {
-	uint8_t modelID[13] = {12, 'S', 'W', '2','_','L','M','1','_','T','M','P','1'};
-	uint8_t manufactureID[5] = {4, 'L', 'u', 'm', 'i'};
-	uint8_t version = 1;
+	i8_t modelID[13] = {12, 'S', 'W', '2','_','L','M','1','_','T','M','P','1'};
+	i8_t manufactureID[5] = {4, 'L', 'u', 'm', 'i'};
+	i8_t version = 1;
 
 	if(emberAfNetworkState() != EMBER_JOINED_NETWORK){
 		return;
@@ -131,11 +149,11 @@ void SEND_ReportInfoHc(void)
  * @param   Endpoint, byValue
  * @retval  None
  */
-void SEND_OnOffStateReport(uint8_t Endpoint, uint8_t byValue){
+void SEND_OnOffStateReport(i8_t Endpoint, i8_t byValue){
 	SEND_FillBufferGlobalCommand(ZCL_ON_OFF_CLUSTER_ID,
 						   ZCL_ON_OFF_ATTRIBUTE_ID,
 						   ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-						   (uint8_t*) &byValue,
+						   (i8_t*) &byValue,
 						   1,
 						   ZCL_BOOLEAN_ATTRIBUTE_TYPE);
 
@@ -146,7 +164,7 @@ void SEND_OnOffStateReport(uint8_t Endpoint, uint8_t byValue){
 	emberAfWriteServerAttribute(Endpoint,
 								ZCL_ON_OFF_CLUSTER_ID,
 								ZCL_ON_OFF_ATTRIBUTE_ID,
-								(uint8_t*) &byValue,
+								(i8_t*) &byValue,
 								ZCL_BOOLEAN_ATTRIBUTE_TYPE);
 }
 
@@ -157,11 +175,11 @@ void SEND_OnOffStateReport(uint8_t Endpoint, uint8_t byValue){
  * @param   Endpoint, byValue
  * @retval  None
  */
-void SEND_PIRStateReport(uint8_t byEndpoint, uint8_t byValue){
+void SEND_PIRStateReport(i8_t byEndpoint, i8_t byValue){
 	SEND_FillBufferGlobalCommand(ZCL_IAS_ZONE_CLUSTER_ID,
 								 ZCL_ZONE_STATUS_ATTRIBUTE_ID,
 								 ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								 (uint8_t*) &byValue,
+								 (i8_t*) &byValue,
 								 1,
 						   	   	 ZCL_BOOLEAN_ATTRIBUTE_TYPE);
 
@@ -172,7 +190,7 @@ void SEND_PIRStateReport(uint8_t byEndpoint, uint8_t byValue){
 	emberAfWriteServerAttribute(byEndpoint,
 								ZCL_IAS_ZONE_CLUSTER_ID,
 								ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								(uint8_t*) &byValue,
+								(i8_t*) &byValue,
 								ZCL_BOOLEAN_ATTRIBUTE_TYPE);
 }
 
@@ -182,11 +200,11 @@ void SEND_PIRStateReport(uint8_t byEndpoint, uint8_t byValue){
  * @param   source, destination, address
  * @retval  None
  */
-void SEND_LDRStateReport(uint8_t byEndpoint, uint32_t byValue){
+void SEND_LDRStateReport(i8_t byEndpoint, i32_t byValue){
 	SEND_FillBufferGlobalCommand(ZCL_ILLUM_MEASUREMENT_CLUSTER_ID,
 								 ZCL_ILLUM_MEASURED_VALUE_ATTRIBUTE_ID,
 								 ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								 (uint32_t*) &byValue,
+								 (i32_t*) &byValue,
 								 sizeof(byValue),
 								 ZCL_INT32U_ATTRIBUTE_TYPE);
 
@@ -197,7 +215,7 @@ void SEND_LDRStateReport(uint8_t byEndpoint, uint32_t byValue){
 	emberAfWriteServerAttribute(byEndpoint,
 								ZCL_ILLUM_MEASUREMENT_CLUSTER_ID,
 								ZCL_ILLUM_MEASURED_VALUE_ATTRIBUTE_ID,
-								(uint32_t*) &byValue,
+								(i32_t*) &byValue,
 								ZCL_INT32U_ATTRIBUTE_TYPE);
 }
 
@@ -207,11 +225,11 @@ void SEND_LDRStateReport(uint8_t byEndpoint, uint32_t byValue){
  * @param   Endpoint, value
  * @retval  None
  */
-void SEND_TempStateReport(uint8_t byEndpoint, uint32_t byValue){
+void SEND_TempStateReport(i8_t byEndpoint, i32_t byValue){
 	SEND_FillBufferGlobalCommand(ZCL_TEMP_MEASUREMENT_CLUSTER_ID,
 								 ZCL_TEMP_MEASURED_VALUE_ATTRIBUTE_ID,
 								 ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								 (uint32_t*) &byValue,
+								 (i32_t*) &byValue,
 								 sizeof(byValue),
 								 ZCL_INT32U_ATTRIBUTE_TYPE);
 
@@ -222,7 +240,7 @@ void SEND_TempStateReport(uint8_t byEndpoint, uint32_t byValue){
 	emberAfWriteServerAttribute(byEndpoint,
 								ZCL_TEMP_MEASUREMENT_CLUSTER_ID,
 								ZCL_TEMP_MEASURED_VALUE_ATTRIBUTE_ID,
-								(uint32_t*) &byValue,
+								(i32_t*) &byValue,
 								ZCL_INT32U_ATTRIBUTE_TYPE);
 }
 
@@ -233,14 +251,14 @@ void SEND_TempStateReport(uint8_t byEndpoint, uint32_t byValue){
  * @param   byRemoteEndpoint, byLocalEndpoint, boValue, byNodeID
  * @retval  None
  */
-SEND_BindingInitToTarget(uint8_t byRemoteEndpoint, uint8_t byLocalEndpoint, bool boValue, uint16_t byNodeID){
+SEND_BindingInitToTarget(i8_t byRemoteEndpoint, i8_t byLocalEndpoint, bool_t boValue, i16_t byNodeID){
 	EmberStatus status = EMBER_INVALID_BINDING_INDEX;
 
-	for(uint8_t i = 0; i< EMBER_BINDING_TABLE_SIZE ; i++)
+	for(i8_t i = 0; i< EMBER_BINDING_TABLE_SIZE ; i++)
 		{
 			EmberBindingTableEntry binding;
 			status = emberGetBinding(i, &binding);
-			uint16_t bindingNodeID = emberGetBindingRemoteNodeId(i);
+			i16_t bindingNodeID = emberGetBindingRemoteNodeId(i);
 
 			// check status send
 			if(status != EMBER_SUCCESS)
@@ -256,14 +274,14 @@ SEND_BindingInitToTarget(uint8_t byRemoteEndpoint, uint8_t byLocalEndpoint, bool
 			{
 				if(binding.local == byLocalEndpoint && binding.clusterId == ZCL_ON_OFF_CLUSTER_ID){
 					switch (boValue) {
-						case true:
+						case TRUE:
 							emberAfCorePrintln("SEND ON INIT TO TARGET");
 							emberAfFillCommandOnOffClusterOn();
 							emberAfSetCommandEndpoints(binding.local, binding.remote);
 							emberAfSendCommandUnicast(EMBER_OUTGOING_DIRECT, bindingNodeID);
 							SEND_OnOffStateReport(binding.local, LED_ON);
 							break;
-						case false:
+						case FALSE:
 							emberAfCorePrintln("SEND OFF INIT TO TARGET");
 							emberAfFillCommandOnOffClusterOff();
 							emberAfSetCommandEndpoints(binding.local, binding.remote);

@@ -32,27 +32,17 @@
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
 #include <stdbool.h>
+#include "typedefs.h"
 /******************************************************************************/
 /*                     EXPORTED TYPES and DEFINITIONS                         */
 /******************************************************************************/
-#define BUTTON_COUNT					2
-#define GPIO_DOUT						0
-#define BUTTON_DEBOUNCE					5
-#define BUTTON_CHECK_HOLD_CYCLES_MS		200
-#define BUTTON_CHECK_RELEASE_MS			500
+#define BUTTON_ONE_PORT				gpioPortD
+#define BUTTON_ONE_PIN				(4U)
 
-#define HOLD_TIME_MIN					5
+#define BUTTON_TWO_PORT				gpioPortD
+#define BUTTON_TWO_PIN				(3U)
 
-
-#define BUTTON_1_PORT				gpioPortD
-#define BUTTON_1_PIN				(4U)
-
-#define BUTTON_2_PORT				gpioPortD
-#define BUTTON_2_PIN				(3U)
-
-#define BUTTON_INIT					{{BUTTON_1_PORT,BUTTON_1_PIN},{BUTTON_2_PORT,BUTTON_2_PIN}}
-
-
+#define BUTTON_INIT					{{BUTTON_ONE_PORT,BUTTON_ONE_PIN},{BUTTON_TWO_PORT,BUTTON_TWO_PIN}}
 
 typedef enum
 {
@@ -69,36 +59,44 @@ typedef enum
 	HOLD_5s ,
 	HOLD_MAX,
 	UNKNOWN,
-}ButtonState_e;
+}ButtonState;
 
 enum
 {
-	BUTTON_1,
-	BUTTON_2
-}BUTTON_e;
+	BUTTON_ONE,
+	BUTTON_TWO
+};
 
 enum
 {
 	BUTTON_PRESS,
 	BUTTON_RELEASE
-}ButtonEvent_e;
+}ButtonEvent;
+typedef void (*pButtonHoldingEvent_t)(u8_t byIndex, ButtonState buttonHoldState);
+typedef void (*pButtonPressEvent_t)(u8_t byIndex, ButtonState buttonPressState);
 
-typedef struct {
-  GPIO_Port_TypeDef		GPIO_Port;
-  unsigned int			byPin;
-  bool					boState;
-  uint8_t				byPressCount;
-  uint8_t				byHoldTime;
-  bool					boRelease;
-  bool					boPress;
-  bool                  boIsHolding;
-} Buttonx_t;
+/******************************************************************************/
+/*                              PRIVATE DATA                                  */
+/******************************************************************************/
 
-/* Function prototypes -----------------------------------------------*/
-typedef void (*BUTTON_holdingEvent_t)(uint8_t byIndex, ButtonState_e holdEvent );
-typedef void (*BUTTON_pressEvent_t)(uint8_t byIndex, ButtonState_e pressEvent);
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
 
-void buttonInit(BUTTON_holdingEvent_t ButtonHoldingHandler,BUTTON_pressEvent_t ButtonPressHandler);
+/******************************************************************************/
+/*                            PRIVATE FUNCTIONS                               */
+/******************************************************************************/
 
+/******************************************************************************/
+/*                            EXPORTED FUNCTIONS                              */
+/******************************************************************************/
+void buttonInit(pButtonHoldingEvent_t ButtonHoldingHandler,pButtonPressEvent_t ButtonPressHandler);
+/******************************************************************************/
+/******************************************************************************/
+/*                     EXPORTED TYPES and DEFINITIONS                         */
+/******************************************************************************/
+/******************************************************************************/
+/*                              PRIVATE DATA                                  */
+/******************************************************************************/
 
 #endif /* SOURCE_HARD_BUTTON_BUTTON_H_ */

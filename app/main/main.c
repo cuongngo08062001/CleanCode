@@ -27,53 +27,94 @@
 /******************************************************************************/
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
-#include <source/app/main/main.h>
-#include <source/app/network/network.h>
-#include <source/app/receive/receive.h>
-#include <source/app/send/send.h>
-#include <source/mid/Button/Button.h>
-#include <source/mid/kalman-filter/kalman-filter.h>
-#include <source/mid/led/led.h>
-#include <source/mid/light-sensor/light-sensor.h>
-#include <source/mid/temperature-humidity-sensor/temperature-humidity-sensor.h>
-#include "app/framework/include/af.h"
-#include "protocol/zigbee/stack/include/binding-table.h"
-#include "math.h"
+#include <app/framework/include/af.h>
+#include <protocol/zigbee/stack/include/binding-table.h>
+#include <math.h>
+#include "source/app/network/network.h"
+#include "source/app/receive/receive.h"
+#include "source/app/send/send.h"
+#include "source/mid/Button/Button.h"
+#include "source/mid/kalman-filter/kalman-filter.h"
+#include "source/mid/led/led.h"
+#include "source/mid/light-sensor/light-sensor.h"
+#include "source/mid/temperature-humidity-sensor/temperature-humidity-sensor.h"
+#include "source/app/main/main.h"
 
 /******************************************************************************/
 /*                     EXPORTED TYPES and DEFINITIONS                         */
 /******************************************************************************/
 #define PERIOD_SCAN_SENSORLIGHT									10000 	//	ms
 #define PERIOD_SCAN_SENSORTEMHUMI								10000	//	ms
-#define ENDPOINT_ONOFF_LED1										1		
-#define ENDPOINT_ONOFF_LED2										2
-#define ENDPOINT_LIGHT											3										
-#define ENDPOINT_TEMP											4
+#define DELAY_MS												1000
+enum{
+	ENDPOINT_ONOFF_LED_ONE	= 1,
+	ENDPOINT_ONOFF_LED_TWO,
+	ENDPOINT_LIGHT,
+	ENDPOINT_TEMP
+};
 
+enum{
+	RGB1_ENDPOINT	= 1,
+	RGB2_ENDPOINT,
+	LIGH_ENDPOINT,
+	TEMP_ENDPOINT
+};
+typedef enum{
+	POWER_ON_STATE,
+	REPORT_STATE,
+	IDLE_STATE,
+	REBOOT_STATE
+}SystemState;
 /******************************************************************************/
 /*                              PRIVATE DATA                                  */
 /******************************************************************************/
-bool g_boNetworkReady = false;
-SystemState_e g_systemState = POWER_ON_STATE;
-
+bool_t g_boNetworkReady = FALSE;
+SystemState g_systemState = POWER_ON_STATE;
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
 
 /******************************************************************************/
 /*                            PRIVATE FUNCTIONS                               */
 /******************************************************************************/
-void Main_ButtonPressCallbackHandler(uint8_t byButton, ButtonState_e buttonPressHandler);
-void Main_ButtonHoldCallbackHandler(uint8_t byButton, ButtonState_e buttonHoldingHandler);
-void mainNetworkEventHandler(uint8_t byNetworkResult);
-void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
+static void mainButtonPressCallbackHandler(i8_t byButtonId, ButtonState buttonPressState);
+static void mainButtonHoldCallbackHandler(i8_t byButton, ButtonState buttonHoldingState);
+static void mainNetworkEventHandler(i8_t byNetworkResult);
+static void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
                                             EmberEUI64 exPanID,
-                                            uint8_t byCost);
+											i8_t byCost);
+EmberAfStatus emberAfPluginFindAndBindTargetStart(i8_t byEndpoint);
+EmberStatus emberAfPluginFindAndBindInitiatorStart(i8_t byEndpoint);
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            PRIVATE FUNCTIONS                               */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            EXPORTED FUNCTIONS                              */
+/******************************************************************************/
+
+/******************************************************************************/
+/******************************************************************************/
+/*                     EXPORTED TYPES and DEFINITIONS                         */
+/******************************************************************************/
+/******************************************************************************/
+/*                              PRIVATE DATA                                  */
+/******************************************************************************/
 /******************************************************************************/
 /*                            EVENTS CONTROL                            	  */
 /******************************************************************************/
-EmberEventControl ReadValueLightSensorControl;
-EmberEventControl ReadValueTempHumiControl;
+EmberEventControl readValueLightSensorControl;
+EmberEventControl readValueTempHumiControl;
 EmberEventControl mainStateEventControl;
 EmberEventControl MTORRsEventControl;
-EmberEventControl FindNetworkControl;
+EmberEventControl findNetworkControl;
+
+/******************************************************************************/
+
 /** @brief Main Init
  *
  *
@@ -101,68 +142,69 @@ void emberAfMainInitCallback(void)
 	LDRInit();
 	initI2C();
 	Si7020_Init();
-	byButtonInit(Main_ButtonHoldCallbackHandler, Main_ButtonPressCallbackHandler);
+	byButtonInit(mainButtonHoldCallbackHandler, mainButtonPressCallbackHandler);
 	Network_Init(mainNetworkEventHandler);
 	emberEventControlSetActive(mainStateEventControl);
 	KalmanFilterInit(2, 2, 0.001); // Initialize Kalman filter
-	emberEventControlSetDelayMS(ReadValueLightSensorControl, 1000);
-	emberEventControlSetDelayMS(ReadValueTempHumiControl,1000);
+	emberEventControlSetDelayMS(ReadValueLightSensorControl, DELAY_MS);
+	emberEventControlSetDelayMS(ReadValueTempHumiControl,DELAY_MS);
 }
 /******************************************************************************/
 /**
  * @func    Main_byButtonPressCallbackHandler
  * @brief   Handler State Press Button
- * @param   uint8_t byButton
- * 			ButtonState_e buttonPressHandler
+ * @param   i8_t byButton
+ * 			ButtonState_e buttonPressState
  * @retval  None
  */
-void Main_ButtonPressCallbackHandler(uint8_t byButton, ButtonState_e buttonPressHandler)
+static void mainButtonPressCallbackHandler(i8_t byButtonId, ButtonState buttonPressState)
 {
-	switch(buttonPressHandler)
+	switch(buttonPressState)
 		{
 		case PRESS_1:
-			if(byButton == BUTTON_1)
+			if(byButtonId == BUTTON_ONE)
 			{
 				emberAfCorePrintln("SW1: 1 time");
-				turnOnLed(LED1,ledBlue);
-				SEND_OnOffStateReport(ENDPOINT_ONOFF_LED1, LED_ON);
+				turnOnLed(LED_ONE,LED_BLUE);
+				SEND_OnOffStateReport(ENDPOINT_ONOFF_LED_ONE, LED_ON);
 				SEND_BindingInitToTarget(SOURCE_ENDPOINT_PRIMARY,
-										DESTINATTION_ENDPOINT,
-										true,
-										HC_NETWORK_ADDRESS);
+										 DESTINATTION_ENDPOINT,
+										 TRUE,
+										 HC_NETWORK_ADDRESS);
 			}
 			else
 			{
 				emberAfCorePrintln("SW2: 1 time");
-				turnOnLed(LED2,ledBlue);
-				SEND_OnOffStateReport(ENDPOINT_ONOFF_LED2, LED_ON);
+				turnOnLed(LED_TWO,LED_BLUE);
+
+				SEND_OnOffStateReport(ENDPOINT_ONOFF_LED_TWO, LED_ON);
 
 			}
 		break;
 		case PRESS_2:
-			if(byButton == BUTTON_1)
+			if(byButtonId == BUTTON_ONE)
 			{
 				emberAfCorePrintln("SW1: 2 times");
-				SEND_OnOffStateReport(ENDPOINT_ONOFF_LED1, LED_OFF);
-				turnOffRBGLed(LED1);
+				SEND_OnOffStateReport(ENDPOINT_ONOFF_LED_ONE, LED_OFF);
+				turnOffRBGLed(LED_ONE);
 				SEND_BindingInitToTarget(SOURCE_ENDPOINT_PRIMARY,
 										DESTINATTION_ENDPOINT,
-										false,
+										FALSE,
 										HC_NETWORK_ADDRESS);
 			}
 			else
 			{
 				emberAfCorePrintln("SW2: 2 time");
-				turnOffRBGLed(LED2);
-				SEND_OnOffStateReport(ENDPOINT_ONOFF_LED2, LED_OFF);
+				turnOffRBGLed(LED_TWO);
+				SEND_OnOffStateReport(ENDPOINT_ONOFF_LED_TWO, LED_OFF);
 			}
 			break;
 		case PRESS_3:
-			if(byButton == BUTTON_1)
+			if(byButtonId == BUTTON_ONE)
 			{
 				emberAfCorePrintln("SW1: 3 time");
 				emberAfPluginFindAndBindTargetStart(1);
-				toggleLed(LED2,ledyellow,3,200,200);
+				toggleLed(LED_TWO,LED_YELLOW,3,200,200);
 
 
 			}
@@ -170,11 +212,11 @@ void Main_ButtonPressCallbackHandler(uint8_t byButton, ButtonState_e buttonPress
 			{
 				emberAfCorePrintln("SW2: 3 time");
 				emberAfPluginFindAndBindInitiatorStart(1);
-				toggleLed(LED2,ledRGB,3,200,200);
+				toggleLed(LED_TWO,LED_RGB,3,200,200);
 			}
 			break;
 		case PRESS_4:
-			if(byButton == BUTTON_1)
+			if(byButtonId == BUTTON_ONE)
 			{
 				emberAfCorePrintln("SW1: 4 time");
 			}
@@ -184,7 +226,7 @@ void Main_ButtonPressCallbackHandler(uint8_t byButton, ButtonState_e buttonPress
 			}
 			break;
 		case PRESS_5:
-			if(byButton == BUTTON_1)
+			if(byButtonId == BUTTON_ONE)
 			{
 				emberAfCorePrintln("SW1: 5 time");
 
@@ -192,7 +234,7 @@ void Main_ButtonPressCallbackHandler(uint8_t byButton, ButtonState_e buttonPress
 			else
 			{
 				emberAfCorePrintln("SW2: 5 time");
-				toggleLed(LED1,ledRed, 2, 200, 200);
+				toggleLed(LED_ONE,LED_RED, 2, 200, 200);
 				g_systemState = REBOOT_STATE;
 				emberEventControlSetDelayMS(mainStateEventControl,3000);
 			}
@@ -204,13 +246,13 @@ void Main_ButtonPressCallbackHandler(uint8_t byButton, ButtonState_e buttonPress
 /**
  * @func    Main_ButtonHoldCallbackHandler
  * @brief   Handler State Holding Button
- * @param   uint8_t byButton
+ * @param   i8_t byButton
  * 			ButtonState_e buttonHoldingHandler
  * @retval  None
  */
-void Main_ButtonHoldCallbackHandler(uint8_t byButton, ButtonState_e buttonHoldingHandler)
+static void Main_ButtonHoldCallbackHandler(i8_t byButton, ButtonState buttonHoldingState)
 {
-	switch(buttonHoldingHandler)
+	switch(buttonHoldingState)
 	{
 	case HOLD_1s:
 		emberAfCorePrintln("SW1: 1 s");
@@ -246,7 +288,7 @@ void mainStateEventHandler(void)
 			nwkStatusCurrent = emberAfNetworkState();
 			if(nwkStatusCurrent == EMBER_NO_NETWORK)
 			{
-				toggleLed(LED1,ledRed,3,200,200);
+				toggleLed(LED_ONE,LED_RED,3,200,200);
 				emberEventControlSetInactive(FindNetworkControl);
 				emberEventControlSetActive(FindNetworkControl);
 			}
@@ -280,41 +322,41 @@ void mainStateEventHandler(void)
  * @param   None
  * @retval  None
  */
-void mainNetworkEventHandler(uint8_t byNetworkResult)
+static void mainNetworkEventHandler(i8_t byNetworkResult)
 {
 	emberAfCorePrintln("Network Event Handle");
 	switch (byNetworkResult) {
 		case NETWORK_HAS_PARENT:
 			emberAfCorePrintln("Network has parent");
-			toggleLed(LED1,ledPink,3,300,300);
-			g_boNetworkReady = true;
+			toggleLed(LED_ONE,LED_PINK,3,300,300);
+			g_boNetworkReady = TRUE;
 			g_systemState = REPORT_STATE;
-			emberEventControlSetDelayMS(mainStateEventControl, 1000);
+			emberEventControlSetDelayMS(mainStateEventControl, DELAY_MS);
 			break;
 		case NETWORK_JOIN_FAIL:
 			g_systemState = IDLE_STATE;
-			toggleLed(LED1,ledBlue,3,300,300);
+			toggleLed(LED_ONE,LED_BLUE,3,300,300);
 			emberAfCorePrintln("Network Join Fail");
-			emberEventControlSetDelayMS(mainStateEventControl, 1000);
+			emberEventControlSetDelayMS(mainStateEventControl, DELAY_MS);
 			break;
 		case NETWORK_JOIN_SUCCESS:
 			emberEventControlSetInactive(FindNetworkControl);
 			emberAfCorePrintln("Network Join Success");
-			toggleLed(LED1,ledPink,3,300,300);
-			g_boNetworkReady =true;
+			toggleLed(LED_ONE,LED_PINK,3,300,300);
+			g_boNetworkReady =TRUE;
 			g_systemState = REPORT_STATE;
-			emberEventControlSetDelayMS(mainStateEventControl, 1000);
+			emberEventControlSetDelayMS(mainStateEventControl, DELAY_MS);
 			break;
 		case NETWORK_LOST_PARENT:
 			emberAfCorePrintln("Network lost parent");
-			toggleLed(LED1,ledPink,3,300,300);
+			toggleLed(LED_ONE,LED_PINK,3,300,300);
 			g_systemState = IDLE_STATE;
-			emberEventControlSetDelayMS(mainStateEventControl, 1000);
+			emberEventControlSetDelayMS(mainStateEventControl, DELAY_MS);
 			break;
 		case NETWORK_OUT_NETWORK:
 			if(g_boNetworkReady)
 			{
-				toggleLed(LED1,ledRed,3,300,300);
+				toggleLed(LED_ONE,LED_PINK,3,300,300);
 				g_systemState = REBOOT_STATE;
 				emberEventControlSetDelayMS(mainStateEventControl, 3000);
 			}
@@ -333,7 +375,7 @@ void FindNetworkHandler(void)
 {
 	emberEventControlSetInactive(FindNetworkControl);
 	NETWORK_FindAndJoin();
-	emberEventControlSetDelayMS(FindNetworkControl, 10000);
+	emberEventControlSetDelayMS(FindNetworkControl, DELAY_MS*10);
 
 }
 /**
@@ -344,9 +386,9 @@ void FindNetworkHandler(void)
  */
 void ReadValueLightSensorControl(void)
 {
-	uint32_t byValueLuxFirst = 0;
-	uint32_t byValueLuxSecond = 0;
-	emberEventControlSetInactive(ReadValueLightSensorControl);
+	i32_t byValueLuxFirst = 0;
+	i32_t byValueLuxSecond = 0;
+	emberEventControlSetInactive(readValueLightSensorControl);
 	byValueLuxFirst = LightSensor_AdcPollingRead();
 	if(abs(byValueLuxSecond - byValueLuxFirst) > 30)
 		{
@@ -355,11 +397,11 @@ void ReadValueLightSensorControl(void)
 		emberAfCorePrintln("Light:   %d lux         ",byValueLuxSecond);
 			if(byValueLuxSecond > 500)
 			{
-				turnOnLed(LED2,ledGreen);
+				turnOnLed(LED_TWO,LED_GREEN);
 			}
 			else
 			{
-				turnOffRBGLed(LED2);
+				turnOffRBGLed(LED_TWO);
 			}
 		}
 	emberEventControlSetDelayMS(ReadValueLightSensorControl,PERIOD_SCAN_SENSORLIGHT);
@@ -373,8 +415,8 @@ void ReadValueLightSensorControl(void)
 void ReadValueTempHumiHandler(void)
 {
 	emberEventControlSetInactive(ReadValueTempHumiControl);
-	uint32_t Humi = Si7020_MeasureHumi();
-	uint32_t Temp = Si7020_MeasureTemp();
+	i32_t Humi = Si7020_MeasureHumi();
+	i32_t Temp = Si7020_MeasureTemp();
 	SEND_TempStateReport(ENDPOINT_TEMP,Temp);
 	emberAfCorePrintln("Humi:    %d RH       Temp:     %d oC        ", Humi,Temp);
 	emberEventControlSetDelayMS(ReadValueTempHumiControl,PERIOD_SCAN_SENSORTEMHUMI);
@@ -387,12 +429,12 @@ void ReadValueTempHumiHandler(void)
  */
 void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
                                             EmberEUI64 exPanID,
-                                            uint8_t byCost)
+                                            i8_t byCost)
 {
 	// handle for MTORRs
 	emberAfCorePrintln("Received MTORRs");
 	emberEventControlSetInactive(MTORRsEventControl);
-	emberEventControlSetDelayMS(MTORRsEventControl,2* ((uint8_t)halCommonGetRandom()));			// 1-2 minutes
+	emberEventControlSetDelayMS(MTORRsEventControl,2* ((i8_t)halCommonGetRandom()));			// 1-2 minutes
 }
 /**
  * @func    MTORRsEventHandler
@@ -403,23 +445,23 @@ void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
 void MTORRsEventHandler(void)
 {
 	emberEventControlSetInactive(MTORRsEventControl);
-	uint8_t byDataPtr;
-	uint8_t byDataLenght = 1;
-	EmberAfStatus status = emberAfReadServerAttribute(RGB1_ENDPOINT,
+	i8_t byDataPtr;
+	i8_t byDataLenght = 1;
+	EmberAfStatus statusOne = emberAfReadServerAttribute(RGB1_ENDPOINT,
 											ZCL_ON_OFF_CLUSTER_ID,
 											ZCL_ON_OFF_ATTRIBUTE_ID,
 											&byDataPtr,
 											byDataLenght);
-	if(status == EMBER_ZCL_STATUS_SUCCESS){
+	if(statusOne == EMBER_ZCL_STATUS_SUCCESS){
 		SEND_OnOffStateReport(RGB1_ENDPOINT,byDataPtr);
 	}
 
-	EmberAfStatus status1 = emberAfReadServerAttribute(RGB2_ENDPOINT,
+	EmberAfStatus statusTwo = emberAfReadServerAttribute(RGB2_ENDPOINT,
 												ZCL_ON_OFF_CLUSTER_ID,
 												ZCL_ON_OFF_ATTRIBUTE_ID,
 												&byDataPtr,
 												byDataLenght);
-		if(status1 == EMBER_ZCL_STATUS_SUCCESS){
+		if(statusTwo == EMBER_ZCL_STATUS_SUCCESS){
 			SEND_OnOffStateReport(RGB2_ENDPOINT,byDataPtr);
 		}
 }

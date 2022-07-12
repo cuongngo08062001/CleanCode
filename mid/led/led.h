@@ -26,9 +26,12 @@
 // Enclosing macro to prevent multiple inclusion
 #ifndef SOURCE_MID_LED_H_
 #define SOURCE_MID_LED_H_
-
 /******************************************************************************/
-/*                     		DEFINITIONS            				              */
+/*                              INCLUDE FILES                                 */
+/******************************************************************************/
+#include "typedefs.h"
+/******************************************************************************/
+/*                       EXPORTED TYPES & DEFINITIONS            		      */
 /******************************************************************************/
 #define LED_RGB_COUNT				2
 #define LED_RGB_ELEMENT				3
@@ -48,59 +51,52 @@
 #define LED_RGB_1                       { { LED_PORT_1, LED_RED_PIN_1 }, { LED_PORT_1, LED_GREEN_PIN_1 }, { LED_PORT_1, LED_BLUE_PIN_1 } }
 #define LED_RGB_2                       { { LED_PORT_2, LED_RED_PIN_2 }, { LED_PORT_2, LED_GREEN_PIN_2 }, { LED_PORT_2, LED_BLUE_PIN_2 } }
 
-#define TIMER_DIM_INIT                                                           \
-{                                                                                   \
-    false,                 /* Enable timer when initialization completes. */           \
-    false,                /* Stop counter during debug halt. */                       \
-    timerPrescale1,       /* No prescaling. */                                        \
-    timerClkSelHFPerClk,  /* Select HFPER / HFPERB clock. */                          \
-    false,                /* Not 2x count mode. */                                    \
-    false,                /* No ATI. */                                               \
-    timerInputActionNone, /* No action on falling input edge. */                      \
-    timerInputActionNone, /* No action on rising input edge. */                       \
-    timerModeUp,          /* Up-counting. */                                          \
-    false,                /* Do not clear DMA requests when DMA channel is active. */ \
-    false,                /* Select X2 quadrature decode mode (if used). */           \
-    false,                /* Disable one shot. */                                     \
-    false                 /* Not started/stopped/reloaded by other timers. */         \
-}
+
 typedef enum{
-	LED1,
-	LED2
-}LedNumber_e;
+	LED_ONE = 0x00,
+	LED_TWO
+}LedNumber;
 typedef enum
 {
-	ledOff 				= 0x000,
-	ledRed				= BIT(0),
-	ledGreen			= BIT(1),
-	ledBlue				= BIT(2),
-	ledPink				= ledRed  | ledBlue,
-	ledyellow			= ledGreen| ledRed,
-	ledRGB				= ledRed  | ledGreen | ledBlue
-}LedColor_e;
+	LED_OFF 			= 0x00,
+	LED_ON						,
+	LED_RED				= BIT(0),
+	LED_GREEN			= BIT(1),
+	LED_BLUE			= BIT(2),
+	LED_PINK			= LED_RED  | LED_BLUE,
+	LED_YELLOW			= LED_GREEN| LED_RED,
+	LED_RGB				= LED_RED  | LED_GREEN | LED_BLUE
+}LedColor;
 
 typedef enum
 {
-	red,
-	green,
-	blue,
-	off
-}LedState_e;
+	RED = 0x00,
+	GREEN,
+	BLUE,
+	OFF
+}LedState;
 enum{
-	LED_FREE,
+	LED_FREE = 0x00,
 	LED_TOGGLE
 };
-enum{
-	LED_ON,
-	LED_OFF
-};
-/* Function prototypes -----------------------------------------------*/
+
+/******************************************************************************/
+/*                              PRIVATE DATA                                  */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            PRIVATE FUNCTIONS                               */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            EXPORTED FUNCTIONS                              */
+/******************************************************************************/
 void ledInit(void);
-void turnOffRBGLed(LedNumber_e ledIndex);
-void toggleLedHandle(LedNumber_e ledIndex);
-void turnOnLed(LedNumber_e index, LedNumber_e color);
-
-void toggleLedHandle(LedNumber_e ledIndex);
-void toggleLed(LedNumber_e ledIndex, LedColor_e color, uint8_t byToggleTime, uint32_t byOnTimeMs, uint32_t byOffTimeMs);
-
+void turnOffRBGLed(LedNumber ledIndex);
+void turnOnLed(LedNumber index, LedNumber LedColor);
+void toggleLed(LedNumber ledIndex, LedColor LedColor, i8_t byToggleTime, i32_t byOnTimeMs, i32_t byOffTimeMs);
 #endif /* SOURCE_MID_LED_H_ */

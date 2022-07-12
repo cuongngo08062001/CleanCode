@@ -26,27 +26,46 @@
 /******************************************************************************/
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
-#include <source/mid/led/led.h>
-#include "app/framework/include/af.h"
-#include "em_timer.h"
 
+#include <app/framework/include/af.h>
+#include <em_timer.h>
+#include "source/mid/led/led.h"
 /******************************************************************************/
-/*                     EXPORTED TYPES and DEFINITIONS                         */
+/*                               DEFINITIONS                         		  */
 /******************************************************************************/
 typedef struct {
   GPIO_Port_TypeDef   GPIO_Port;
   unsigned int        byPin;
-  bool 				  boLedBlinkMode;
-  LedColor_e		  LedColor;
-  uint32_t 			  byOnTime;
-  uint32_t			  byOffTime;
-  uint8_t			  byBlinkTime;
+  bool_t 			  boLedBlinkMode;
+  LedColor  		  LedColor;
+  i32_t 			  byOnTime;
+  i32_t			  	  byOffTime;
+  i8_t			      byBlinkTime;
 } LedArray_t;
+
+#define TIMER_DIM_INIT                                                          	 \
+{                                                                                  	 \
+    FALSE,                 /* Enable timer when initialization completes. */          \
+    FALSE,                /* Stop counter during debug halt. */                       \
+    timerPrescale1,       /* No prescaling. */                                        \
+    timerClkSelHFPerClk,  /* Select HFPER / HFPERB clock. */                          \
+    FALSE,                /* Not 2x count mode. */                                    \
+    FALSE,                /* No ATI. */                                               \
+    timerInputActionNone, /* No action on falling input edge. */                      \
+    timerInputActionNone, /* No action on rising input edge. */                       \
+    timerModeUp,          /* Up-counting. */                                          \
+    FALSE,                /* Do not clear DMA requests when DMA channel is active. */ \
+    FALSE,                /* Select X2 quadrature decode mode (if used). */           \
+    FALSE,                /* Disable one shot. */                                     \
+    FALSE                 /* Not started/stopped/reloaded by other timers. */         \
+}
+
 /******************************************************************************/
 /*                              CONTROL EVENTS                    	 		  */
 /******************************************************************************/
-EmberEventControl led1ToggleEventControl,led2ToggleEventControl;
+EmberEventControl ledOneToggleEventHandler,ledTwoToggleEventHandler;
 EmberEventControl *ledEventControl[LED_RGB_COUNT];
+
 /******************************************************************************/
 /*                              PRIVATE DATAs                    	 		  */
 /******************************************************************************/
@@ -54,6 +73,19 @@ LedArray_t led_Array[LED_RGB_COUNT][LED_RGB_ELEMENT] = {LED_RGB_1, LED_RGB_2};
 LedArray_t ledAction[LED_RGB_COUNT];
 
 /******************************************************************************/
+/*                              EXPORTED DATA                                 */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                            PRIVATE FUNCTIONS                               */
+/******************************************************************************/
+static void toggleLedHandle(LedNumber ledIndex);
+/******************************************************************************/
+/*                            EXPORTED FUNCTIONS                              */
+/******************************************************************************/
+
+/******************************************************************************/
+
 /**
  * @func    ledInit
  * @brief   Initialize LED
@@ -62,7 +94,7 @@ LedArray_t ledAction[LED_RGB_COUNT];
  */
 void ledInit(void)
 {
-	CMU_ClockEnable(cmuClock_GPIO, true);
+	CMU_ClockEnable(cmuClock_GPIO, TRUE);
 	for(int i = 0;i <LED_RGB_COUNT;i++)
 	{
 		for(int j = 0; j< LED_RGB_ELEMENT;j++)
@@ -71,10 +103,10 @@ void ledInit(void)
 							gpioModePushPull,0);
 		}
 	}
-	turnOffRBGLed(LED1);
-	turnOffRBGLed(LED2);
-	ledEventControl[LED1] =(EmberEventControl *) &led1ToggleEventControl;
-	ledEventControl[LED2] =(EmberEventControl *) &led2ToggleEventControl;
+	turnOffRBGLed(LED_ONE);
+	turnOffRBGLed(LED_TWO);
+	ledEventControl[LED_ONE] =(EmberEventControl *) &ledOneToggleEventHandler;
+	ledEventControl[LED_TWO] =(EmberEventControl *) &ledTwoToggleEventHandler;
 }
 
 /**
@@ -83,7 +115,7 @@ void ledInit(void)
  * @param   ledNumber
  * @retval  None
  */
-void turnOffRBGLed(LedNumber_e ledIndex)
+void turnOffRBGLed(LedNumber ledIndex)
 {
 	for(int j=0;j<LED_RGB_ELEMENT;j++)
 	{
@@ -97,7 +129,7 @@ void turnOffRBGLed(LedNumber_e ledIndex)
  * @param   ledNumber, ledColor_e
  * @retval  None
  */
-void turnOnLed(LedNumber_e index, LedColor_e ledColor)
+void turnOnLed(LedNumber index, LedColor ledColor)
 {
 	for(int j=0;j<LED_RGB_ELEMENT;j++)
 	{
@@ -117,7 +149,7 @@ void turnOnLed(LedNumber_e index, LedColor_e ledColor)
  * @param   ledNumber, ledColor_e, toggleTime, onTimeMs, offTimeMs
  * @retval  None
  */
-void toggleLed(LedNumber_e ledIndex, LedColor_e color, uint8_t byToggleTime, uint32_t byOnTimeMs, uint32_t byOffTimeMs)
+void toggleLed(LedNumber ledIndex, LedColor color, i8_t byToggleTime, i32_t byOnTimeMs, i32_t byOffTimeMs)
 {
 	ledAction[ledIndex].boLedBlinkMode = LED_TOGGLE;
 	ledAction[ledIndex].LedColor = color;
@@ -134,7 +166,7 @@ void toggleLed(LedNumber_e ledIndex, LedColor_e color, uint8_t byToggleTime, uin
  * @param   ledNumber
  * @retval  None
  */
-void toggleLedHandle(LedNumber_e ledIndex)
+void toggleLedHandle(LedNumber ledIndex)
 {
 	if(ledAction[ledIndex].byBlinkTime !=0)
 	{
@@ -173,18 +205,18 @@ void toggleLedHandle(LedNumber_e ledIndex)
 }
 
 /**
- * @func    led1ToggleEventHandle
+ * @func    LED_ONEToggleEventHandle
  * @brief   Event Led Handler
  * @param   None
  * @retval  None
  */
-void led1ToggleEventHandler(void)
+void ledOneToggleEventHandler(void)
 {
-	emberEventControlSetInactive(led1ToggleEventControl);
-	switch(ledAction[LED1].boLedBlinkMode)
+	emberEventControlSetInactive(ledOneToggleEventHandler);
+	switch(ledAction[LED_ONE].boLedBlinkMode)
 	{
 	case LED_TOGGLE:
-		toggleLedHandle(LED1);
+		toggleLedHandle(LED_ONE);
 		break;
 	default:
 		break;
@@ -193,18 +225,18 @@ void led1ToggleEventHandler(void)
 
 
 /**
- * @func    led2ToggleEventHandle
+ * @func    LED_TWOToggleEventHandle
  * @brief   Event Led Handler
  * @param   None
  * @retval  None
  */
-void led2ToggleEventHandler(void)
+void ledTwoToggleEventHandler(void)
 {
-	emberEventControlSetInactive(led2ToggleEventControl);
-	switch(ledAction[LED2].boLedBlinkMode)
+	emberEventControlSetInactive(ledTwoToggleEventHandler);
+	switch(ledAction[LED_TWO].boLedBlinkMode)
 	{
 	case LED_TOGGLE:
-		toggleLedHandle(LED2);
+		toggleLedHandle(LED_TWO);
 		break;
 	default:
 		break;
