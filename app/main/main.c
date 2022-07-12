@@ -33,7 +33,7 @@
 #include "source/app/network/network.h"
 #include "source/app/receive/receive.h"
 #include "source/app/send/send.h"
-#include "source/mid/Button/Button.h"
+#include "source/mid/button/button.h"
 #include "source/mid/kalman-filter/kalman-filter.h"
 #include "source/mid/led/led.h"
 #include "source/mid/light-sensor/light-sensor.h"
@@ -108,7 +108,7 @@ EmberStatus emberAfPluginFindAndBindInitiatorStart(u8_t byEndpoint);
 /******************************************************************************/
 EmberEventControl ReadValueLightSensorControl;
 EmberEventControl ReadValueTempHumiControl;
-EmberEventControl mainStateEventControl;
+EmberEventControl MainStateEventControl;
 EmberEventControl MTORRsEventControl;
 EmberEventControl FindNetworkControl;
 
@@ -141,9 +141,9 @@ void emberAfMainInitCallback(void)
 	lightSensor_Init();
 	initI2C();
 	Si7020_Init();
-	ButtonInit(mainButtonHoldCallbackHandler, mainButtonPressCallbackHandler);
-	Network_Init(mainNetworkEventHandler);
-	emberEventControlSetActive(mainStateEventControl);
+	buttonInit(mainButtonHoldCallbackHandler, mainButtonPressCallbackHandler);
+	networkInit(mainNetworkEventHandler);
+	emberEventControlSetActive(MainStateEventControl);
 	KalmanFilterInit(2, 2, 0.001); // Initialize Kalman filter
 	emberEventControlSetDelayMS(ReadValueLightSensorControl, DELAY_MS);
 	emberEventControlSetDelayMS(ReadValueTempHumiControl,DELAY_MS);
@@ -235,7 +235,7 @@ static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPr
 				emberAfCorePrintln("SW2: 5 time");
 				toggleLed(LED_ONE,LED_RED, 2, 200, 200);
 				g_systemState = REBOOT_STATE;
-				emberEventControlSetDelayMS(mainStateEventControl,3000);
+				emberEventControlSetDelayMS(MainStateEventControl,3000);
 			}
 			break;
 		default:
@@ -280,7 +280,7 @@ static void Main_ButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHo
  */
 void mainStateEventHandler(void)
 {
-	emberEventControlSetInactive(mainStateEventControl);
+	emberEventControlSetInactive(MainStateEventControl);
 	EmberNetworkStatus nwkStatusCurrent;
 	switch (g_systemState) {
 		case POWER_ON_STATE:
@@ -304,7 +304,7 @@ void mainStateEventHandler(void)
 			g_systemState = IDLE_STATE;
 			EmberNetworkStatus networkStatus = emberAfNetworkState();
 			if (networkStatus != EMBER_NO_NETWORK) {
-				SendZigDevRequest();
+			    SendZigDevRequest();
 				emberClearBindingTable();
 				emberLeaveNetwork();
 			} else {
@@ -330,13 +330,13 @@ static void mainNetworkEventHandler(u8_t byNetworkResult)
 			toggleLed(LED_ONE,LED_PINK,3,300,300);
 			g_boNetworkReady = TRUE;
 			g_systemState = REPORT_STATE;
-			emberEventControlSetDelayMS(mainStateEventControl, DELAY_MS);
+			emberEventControlSetDelayMS(MainStateEventControl, DELAY_MS);
 			break;
 		case NETWORK_JOIN_FAIL:
 			g_systemState = IDLE_STATE;
 			toggleLed(LED_ONE,LED_BLUE,3,300,300);
 			emberAfCorePrintln("Network Join Fail");
-			emberEventControlSetDelayMS(mainStateEventControl, DELAY_MS);
+			emberEventControlSetDelayMS(MainStateEventControl, DELAY_MS);
 			break;
 		case NETWORK_JOIN_SUCCESS:
 			emberEventControlSetInactive(FindNetworkControl);
@@ -344,20 +344,20 @@ static void mainNetworkEventHandler(u8_t byNetworkResult)
 			toggleLed(LED_ONE,LED_PINK,3,300,300);
 			g_boNetworkReady =TRUE;
 			g_systemState = REPORT_STATE;
-			emberEventControlSetDelayMS(mainStateEventControl, DELAY_MS);
+			emberEventControlSetDelayMS(MainStateEventControl, DELAY_MS);
 			break;
 		case NETWORK_LOST_PARENT:
 			emberAfCorePrintln("Network lost parent");
 			toggleLed(LED_ONE,LED_PINK,3,300,300);
 			g_systemState = IDLE_STATE;
-			emberEventControlSetDelayMS(mainStateEventControl, DELAY_MS);
+			emberEventControlSetDelayMS(MainStateEventControl, DELAY_MS);
 			break;
 		case NETWORK_OUT_NETWORK:
 			if(g_boNetworkReady)
 			{
 				toggleLed(LED_ONE,LED_PINK,3,300,300);
 				g_systemState = REBOOT_STATE;
-				emberEventControlSetDelayMS(mainStateEventControl, 3000);
+				emberEventControlSetDelayMS(MainStateEventControl, 3000);
 			}
 			break;
 		default:

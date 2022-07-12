@@ -124,42 +124,42 @@ void halInternalButtonIsr(u8_t byPin)
   u8_t buttonStateNow;
   u8_t buttonStatePrev;
   u32_t debounce;
-  u8_t buttonbyIndex;
+  u8_t byButtonIndex;
 
-  buttonbyIndex = getButtonbyIndex(byPin);
+  byButtonIndex = getButtonIndex(byPin);
   // check valid byIndex
-  if(buttonbyIndex==-1)
+  if(byButtonIndex==-1)
 	  return;
 
-  buttonStateNow = GPIO_PinInGet(buttonArray[buttonbyIndex].GPIO_Port, buttonArray[buttonbyIndex].byPin);
+  buttonStateNow = GPIO_PinInGet(buttonArray[byButtonIndex].GPIO_Port, buttonArray[byButtonIndex].byPin);
   for ( debounce = 0;
         debounce < BUTTON_DEBOUNCE;
         debounce = (buttonStateNow == buttonStatePrev) ? debounce + 1 : 0 ) {
     buttonStatePrev = buttonStateNow;
-    buttonStateNow = GPIO_PinInGet(buttonArray[buttonbyIndex].GPIO_Port, buttonArray[buttonbyIndex].byPin);
+    buttonStateNow = GPIO_PinInGet(buttonArray[byButtonIndex].GPIO_Port, buttonArray[byButtonIndex].byPin);
   }
 
-  buttonArray[buttonbyIndex].boState = buttonStateNow;
+  buttonArray[byButtonIndex].boState = buttonStateNow;
 
   if(buttonStateNow == BUTTON_PRESS)
   {
-	  buttonArray[buttonbyIndex].byPressCount++;
-	  if(buttonArray[buttonbyIndex].boPress != TRUE)
+	  buttonArray[byButtonIndex].byPressCount++;
+	  if(buttonArray[byButtonIndex].boPress != TRUE)
 	  {
 		  emberEventControlSetActive(buttonPressAndHoldEventControl);
 	  }
 
-	  buttonArray[buttonbyIndex].boIsHolding=FALSE;
-	  buttonArray[buttonbyIndex].byHoldTime=0;
-	  buttonArray[buttonbyIndex].boPress = TRUE;
-	  buttonArray[buttonbyIndex].boRelease = FALSE;
+	  buttonArray[byButtonIndex].boIsHolding=FALSE;
+	  buttonArray[byButtonIndex].byHoldTime=0;
+	  buttonArray[byButtonIndex].boPress = TRUE;
+	  buttonArray[byButtonIndex].boRelease = FALSE;
 
   }
   else
   {
 
-	  buttonArray[buttonbyIndex].boRelease = TRUE;
-	  buttonArray[buttonbyIndex].boPress = FALSE;
+	  buttonArray[byButtonIndex].boRelease = TRUE;
+	  buttonArray[byButtonIndex].boPress = FALSE;
 	  emberEventControlSetInactive(buttonReleaseEventControl);
 	  emberEventControlSetDelayMS(buttonReleaseEventControl,BUTTON_CHECK_RELEASE_MS);
   }

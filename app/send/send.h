@@ -55,9 +55,7 @@
 /******************************************************************************/
 void SendZigDevRequest(void);
 void SEND_OnOffStateReport(u8_t byEndpoint, u8_t byValue);
-
 void SEND_ReportInfoHc(void);
-void SendZigDevRequest(void);
 void SEND_PIRStateReport(u8_t byEndpoint, u8_t byValue);
 void SEND_LDRStateReport(u8_t byEndpoint, u32_t byValue);
 void SEND_TempStateReport(u8_t byEndpoint, u32_t byValue);

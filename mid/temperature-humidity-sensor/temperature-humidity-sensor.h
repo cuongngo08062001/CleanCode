@@ -51,6 +51,7 @@
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
+void initI2C(void);
 void Si7020_Init (void);
 bool_t Si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData);
 u32_t Si7020_MeasureHumi (void);

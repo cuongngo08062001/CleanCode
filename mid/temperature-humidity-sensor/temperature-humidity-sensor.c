@@ -67,7 +67,7 @@
 /******************************************************************************/
 /*                            PRIVATE FUNCTIONS                               */
 /******************************************************************************/
-static void initI2C(void);
+
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
@@ -80,7 +80,7 @@ static void initI2C(void);
  * @param   None
  * @retval  None
  */
-static void initI2C(void)
+void initI2C(void)
 {
   CMU_ClockEnable(cmuClock_I2C0, true);
   CMU_ClockEnable(cmuClock_GPIO, true);
@@ -115,7 +115,7 @@ static void initI2C(void)
  * @param   None
  * @retval  None
  */
-void si7020_Init (void){
+void Si7020_Init (void){
 	I2C_TransferSeq_TypeDef    seq;
 	I2C_TransferReturn_TypeDef ret;
 	u8_t                    i2c_read_data[3];	// detect ID: si7020_DEVICE_ID  and checksum byte
@@ -157,7 +157,7 @@ void si7020_Init (void){
  * @param   *buffer, command
  * @retval  Retval
  */
-bool_t si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData){
+bool_t Si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData){
 	I2C_TransferSeq_TypeDef    seq;
 	I2C_TransferReturn_TypeDef retVal;
 	u8_t  byI2C_read_data[byLengthData];  		//i2c_read_data[0]: MSB		i2c_read_data[1]: LSB
@@ -190,9 +190,9 @@ bool_t si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData){
  * @param   *humiData
  * @retval  Humi
  */
-u32_t si7020_MeasureHumi(void){
+u32_t Si7020_MeasureHumi(void){
 	u32_t humiData;
-	bool_t retVal = si7020_Measure (&humiData, SI7020_READ_RH, 2);
+	bool_t retVal = Si7020_Measure (&humiData, SI7020_READ_RH, 2);
 	if (retVal)
 		humiData = ( (((humiData) * 12500) >> 16) - 600 )/100; // Humi = ((Humi * 2500)/(0xFFu +1) - 600)/100
 	return humiData;
@@ -204,9 +204,9 @@ u32_t si7020_MeasureHumi(void){
  * @param   *tempData
  * @retval  Temp
  */
-u32_t si7020_MeasureTemp (void){
+u32_t Si7020_MeasureTemp (void){
 	u32_t tempData;
-	bool_t retVal = si7020_Measure (&tempData, SI7020_READ_TEMP, 2);
+	bool_t retVal = Si7020_Measure (&tempData, SI7020_READ_TEMP, 2);
 	if (retVal)
 		tempData = ( (((tempData) * 17572) >> 16) - 4685 )/100; // Temp = ((Temp * 17572)/(0xFFu +1) - 4685)/100
 	return tempData;
