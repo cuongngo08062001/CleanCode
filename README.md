@@ -38,6 +38,9 @@ Bài tập Clean Code Asm 3. Các phần đã sửa đổi so với ban đầu:
   
 5, Đặt tên kiểu dữ liệu
 
-  Có 1 số kiểu dữ liệu struct, enum nhưng không có hậu tố _t hay _e => đã có đầy đủ hậu tố
+  Có 1 số kiểu dữ liệu struct, enum nhưng không có hậu tố _t hay _e => đã có đầy đủ hậu tố.
+
+Các phần chưa sửa đổi được
++ Tối ưu hóa các hàm sao cho vừa ngắn gọn vừa dễ hiểu.
  
 >>>>>>> 88f1c7b62793e9d0048b7868b9eb2698d12c9f52
