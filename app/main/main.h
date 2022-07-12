@@ -56,8 +56,4 @@
 /******************************************************************************/
 /*                              PRIVATE DATA                                  */
 /******************************************************************************/
-
-/* Function prototypes -----------------------------------------------*/
-EmberAfStatus emberAfPluginFindAndBindTargetStart(u8_t byEndpoint);
-EmberStatus emberAfPluginFindAndBindInitiatorStart(u8_t byEndpoint);
 #endif /* SOURCE_APP_MAIN_MAIN_H_ */

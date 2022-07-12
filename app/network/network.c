@@ -126,7 +126,7 @@ static void joinNetworkEventHandler(void)
  *
  * @parameter			: EmberStatus
  *
- * @return value		: True or false
+ * @return value		: TRUE or FALSE
  */
 bool_t emberAfStackStatusCallback(EmberStatus networkStatus)
 {
@@ -173,7 +173,7 @@ bool_t emberAfStackStatusCallback(EmberStatus networkStatus)
 		emberAfCorePrintln("NETWORK_JOIN_FAIL");
 		networkEventHandle(NETWORK_JOIN_FAIL);
 	}
-	return false;
+	return FALSE;
 }
 
 
