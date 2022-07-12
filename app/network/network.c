@@ -28,6 +28,7 @@
 /******************************************************************************/
 #include <app/framework/include/af.h>
 #include "source/app/network/network.h"
+#include "source/utils/typedefs.h"
 /******************************************************************************/
 /*                            EVENTS CONTROL                            	  */
 /******************************************************************************/
@@ -46,7 +47,7 @@ EmberEventControl joinNetworkEventControl;
 /******************************************************************************/
 /*                            PRIVATE FUNCTIONS                               */
 /******************************************************************************/
-i32_t bytimeFindAndJoin = 0;
+u32_t bytimeFindAndJoin = 0;
 networkEventHandler networkEventHandle = NULL;
 static void joinNetworkEventHandler(void);
 static void NETWORK_StopFindAndJoin(void);
@@ -128,7 +129,7 @@ static void joinNetworkEventHandler(void)
  *
  * @return value		: TRUE or FALSE
  */
-bool_t emberAfStackStatusCallback(EmberStatus networkStatus)
+bool emberAfStackStatusCallback(EmberStatus networkStatus)
 {
 	emberAfCorePrintln("emberAfStackStatusCallback\n");
 

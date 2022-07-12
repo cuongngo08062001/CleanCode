@@ -29,7 +29,7 @@
 /******************************************************************************/
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
-#include "typedefs.h"
+#include "source/utils/typedefs.h"
 /******************************************************************************/
 /*                     EXPORTED TYPES and DEFINITIONS                         */
 /******************************************************************************/
@@ -52,9 +52,9 @@
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
 void Si7020_Init (void);
-bool_t si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData);
-i32_t si7020_MeasureHumi (void);
-i32_t Si7020_MeasureTemp (void);
+bool_t Si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData);
+u32_t Si7020_MeasureHumi (void);
+u32_t Si7020_MeasureTemp (void);
 
 /******************************************************************************/
 #endif /* SOURCE_MID_TEMPHUMI_SI7020_H_ */

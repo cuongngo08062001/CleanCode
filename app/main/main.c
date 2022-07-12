@@ -39,7 +39,6 @@
 #include "source/mid/light-sensor/light-sensor.h"
 #include "source/mid/temperature-humidity-sensor/temperature-humidity-sensor.h"
 #include "source/app/main/main.h"
-
 /******************************************************************************/
 /*                     EXPORTED TYPES and DEFINITIONS                         */
 /******************************************************************************/
@@ -77,14 +76,14 @@ SystemState g_systemState = POWER_ON_STATE;
 /******************************************************************************/
 /*                            PRIVATE FUNCTIONS                               */
 /******************************************************************************/
-static void mainButtonPressCallbackHandler(i8_t byButtonId, ButtonState buttonPressState);
-static void mainButtonHoldCallbackHandler(i8_t byButton, ButtonState buttonHoldingState);
-static void mainNetworkEventHandler(i8_t byNetworkResult);
-static void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
+static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPressState);
+static void mainButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHoldingState);
+static void mainNetworkEventHandler(u8_t byNetworkResult);
+void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
                                             EmberEUI64 exPanID,
-											i8_t byCost);
-EmberAfStatus emberAfPluginFindAndBindTargetStart(i8_t byEndpoint);
-EmberStatus emberAfPluginFindAndBindInitiatorStart(i8_t byEndpoint);
+											u8_t byCost);
+EmberAfStatus emberAfPluginFindAndBindTargetStart(u8_t byEndpoint);
+EmberStatus emberAfPluginFindAndBindInitiatorStart(u8_t byEndpoint);
 /******************************************************************************/
 /*                              EXPORTED DATA                                 */
 /******************************************************************************/
@@ -107,11 +106,11 @@ EmberStatus emberAfPluginFindAndBindInitiatorStart(i8_t byEndpoint);
 /******************************************************************************/
 /*                            EVENTS CONTROL                            	  */
 /******************************************************************************/
-EmberEventControl readValueLightSensorControl;
-EmberEventControl readValueTempHumiControl;
+EmberEventControl ReadValueLightSensorControl;
+EmberEventControl ReadValueTempHumiControl;
 EmberEventControl mainStateEventControl;
 EmberEventControl MTORRsEventControl;
-EmberEventControl findNetworkControl;
+EmberEventControl FindNetworkControl;
 
 /******************************************************************************/
 
@@ -139,10 +138,10 @@ void emberAfMainInitCallback(void)
 {
 	emberAfCorePrintln("Main Init");
 	ledInit();
-	LDRInit();
+	lightSensor_Init();
 	initI2C();
 	Si7020_Init();
-	byButtonInit(mainButtonHoldCallbackHandler, mainButtonPressCallbackHandler);
+	ButtonInit(mainButtonHoldCallbackHandler, mainButtonPressCallbackHandler);
 	Network_Init(mainNetworkEventHandler);
 	emberEventControlSetActive(mainStateEventControl);
 	KalmanFilterInit(2, 2, 0.001); // Initialize Kalman filter
@@ -153,11 +152,11 @@ void emberAfMainInitCallback(void)
 /**
  * @func    Main_byButtonPressCallbackHandler
  * @brief   Handler State Press Button
- * @param   i8_t byButton
+ * @param   u8_t byButton
  * 			ButtonState_e buttonPressState
  * @retval  None
  */
-static void mainButtonPressCallbackHandler(i8_t byButtonId, ButtonState buttonPressState)
+static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPressState)
 {
 	switch(buttonPressState)
 		{
@@ -246,11 +245,11 @@ static void mainButtonPressCallbackHandler(i8_t byButtonId, ButtonState buttonPr
 /**
  * @func    Main_ButtonHoldCallbackHandler
  * @brief   Handler State Holding Button
- * @param   i8_t byButton
+ * @param   u8_t byButton
  * 			ButtonState_e buttonHoldingHandler
  * @retval  None
  */
-static void Main_ButtonHoldCallbackHandler(i8_t byButton, ButtonState buttonHoldingState)
+static void Main_ButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHoldingState)
 {
 	switch(buttonHoldingState)
 	{
@@ -322,7 +321,7 @@ void mainStateEventHandler(void)
  * @param   None
  * @retval  None
  */
-static void mainNetworkEventHandler(i8_t byNetworkResult)
+static void mainNetworkEventHandler(u8_t byNetworkResult)
 {
 	emberAfCorePrintln("Network Event Handle");
 	switch (byNetworkResult) {
@@ -384,12 +383,11 @@ void FindNetworkHandler(void)
  * @param   None
  * @retval  None
  */
-void ReadValueLightSensorControl(void)
+void ReadValueLightSensorHandler(void)
 {
-	i32_t byValueLuxFirst = 0;
-	i32_t byValueLuxSecond = 0;
-	emberEventControlSetInactive(readValueLightSensorControl);
-	byValueLuxFirst = LightSensor_AdcPollingRead();
+	u32_t byValueLuxSecond = 0;
+//	emberEventControlSetInactive(readValueLightSensorControl);
+	u32_t byValueLuxFirst = readAdcPolling_LightSensorHandler();
 	if(abs(byValueLuxSecond - byValueLuxFirst) > 30)
 		{
 		byValueLuxSecond = byValueLuxFirst;
@@ -415,10 +413,10 @@ void ReadValueLightSensorControl(void)
 void ReadValueTempHumiHandler(void)
 {
 	emberEventControlSetInactive(ReadValueTempHumiControl);
-	i32_t Humi = Si7020_MeasureHumi();
-	i32_t Temp = Si7020_MeasureTemp();
-	SEND_TempStateReport(ENDPOINT_TEMP,Temp);
-	emberAfCorePrintln("Humi:    %d RH       Temp:     %d oC        ", Humi,Temp);
+	u32_t byHumi = Si7020_MeasureHumi();
+	u32_t byTemp = Si7020_MeasureTemp();
+	SEND_TempStateReport(ENDPOINT_TEMP,byTemp);
+	emberAfCorePrintln("Humi:    %d RH       Temp:     %d oC        ", byHumi,byTemp);
 	emberEventControlSetDelayMS(ReadValueTempHumiControl,PERIOD_SCAN_SENSORTEMHUMI);
 }
 /**
@@ -429,12 +427,12 @@ void ReadValueTempHumiHandler(void)
  */
 void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
                                             EmberEUI64 exPanID,
-                                            i8_t byCost)
+                                            u8_t byCost)
 {
 	// handle for MTORRs
 	emberAfCorePrintln("Received MTORRs");
 	emberEventControlSetInactive(MTORRsEventControl);
-	emberEventControlSetDelayMS(MTORRsEventControl,2* ((i8_t)halCommonGetRandom()));			// 1-2 minutes
+	emberEventControlSetDelayMS(MTORRsEventControl,2* ((u8_t)halCommonGetRandom()));			// 1-2 minutes
 }
 /**
  * @func    MTORRsEventHandler
@@ -445,8 +443,8 @@ void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
 void MTORRsEventHandler(void)
 {
 	emberEventControlSetInactive(MTORRsEventControl);
-	i8_t byDataPtr;
-	i8_t byDataLenght = 1;
+	u8_t byDataPtr;
+	u8_t byDataLenght = 1;
 	EmberAfStatus statusOne = emberAfReadServerAttribute(RGB1_ENDPOINT,
 											ZCL_ON_OFF_CLUSTER_ID,
 											ZCL_ON_OFF_ATTRIBUTE_ID,

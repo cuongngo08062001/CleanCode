@@ -29,7 +29,7 @@
 /******************************************************************************/
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
-#include "typedefs.h"
+#include "source/utils/typedefs.h"
 /******************************************************************************/
 /*                       EXPORTED TYPES & DEFINITIONS            		      */
 /******************************************************************************/
@@ -58,8 +58,6 @@ typedef enum{
 }LedNumber;
 typedef enum
 {
-	LED_OFF 			= 0x00,
-	LED_ON						,
 	LED_RED				= BIT(0),
 	LED_GREEN			= BIT(1),
 	LED_BLUE			= BIT(2),
@@ -79,7 +77,10 @@ enum{
 	LED_FREE = 0x00,
 	LED_TOGGLE
 };
-
+enum{
+    LED_OFF = 0x00,
+    LED_ON                      ,
+};
 /******************************************************************************/
 /*                              PRIVATE DATA                                  */
 /******************************************************************************/
@@ -98,5 +99,5 @@ enum{
 void ledInit(void);
 void turnOffRBGLed(LedNumber ledIndex);
 void turnOnLed(LedNumber index, LedNumber LedColor);
-void toggleLed(LedNumber ledIndex, LedColor LedColor, i8_t byToggleTime, u32_t byOnTimeMs, i32_t byOffTimeMs);
+void toggleLed(LedNumber ledIndex, LedColor LedColor, u8_t byToggleTime, u32_t byOnTimeMs, u32_t byOffTimeMs);
 #endif /* SOURCE_MID_LED_H_ */

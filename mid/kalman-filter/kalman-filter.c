@@ -25,7 +25,7 @@
  ******************************************************************************/
 #include "app/framework/include/af.h"
 #include <math.h>
-#include <source/mid/kalman-filter/kalman-filter.h>
+#include "source/mid/kalman-filter/kalman-filter.h"
 
 /******************************************************************************/
 /*                     EXPORTED TYPES and DEFINITIONS                         */

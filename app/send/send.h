@@ -29,7 +29,7 @@
 /******************************************************************************/
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
-#include "typedefs.h"
+#include "source/utils/typedefs.h"
 /******************************************************************************/
 /*                     EXPORTED TYPES and DEFINITIONS                         */
 /******************************************************************************/
@@ -54,14 +54,14 @@
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
 void SendZigDevRequest(void);
-void SEND_OnOffStateReport(i8_t byEndpoint, i8_t byValue);
+void SEND_OnOffStateReport(u8_t byEndpoint, u8_t byValue);
 
 void SEND_ReportInfoHc(void);
 void SendZigDevRequest(void);
-void SEND_PIRStateReport(i8_t byEndpoint, i8_t byValue);
-void SEND_LDRStateReport(i8_t byEndpoint, i32_t byValue);
-void SEND_TempStateReport(i8_t byEndpoint, i32_t byValue);
-void SEND_BindingInitToTarget(i8_t byRemoteEndpoint, i8_t byLocalEndpoint, bool_t boValue, i16_t byNodeID);
+void SEND_PIRStateReport(u8_t byEndpoint, u8_t byValue);
+void SEND_LDRStateReport(u8_t byEndpoint, u32_t byValue);
+void SEND_TempStateReport(u8_t byEndpoint, u32_t byValue);
+void SEND_BindingInitToTarget(u8_t byRemoteEndpoint, u8_t byLocalEndpoint, bool_t boValue, i16_t byNodeID);
 /******************************************************************************/
 #endif /* SOURCE_APP_SEND_SEND_H_ */
 

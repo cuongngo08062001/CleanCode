@@ -42,10 +42,10 @@
 /******************************************************************************/
 /*                            PRIVATE FUNCTIONS                               */
 /******************************************************************************/
-i8_t checkBindingTable(i8_t byLocalEndpoint);
-static static bool_t emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd);
-static static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCmd);
-static static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd);
+u8_t checkBindingTable(u8_t byLocalEndpoint);
+bool emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd);
+static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCmd);
+static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd);
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                               */
 /******************************************************************************/
@@ -56,7 +56,7 @@ static static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCm
  * @param   EmberAfClusterCommand
  * @retval  static bool_tean
  */
-static bool_t emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd)
+bool emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd)
 {
 	if(clusterCmd->clusterSpecific)
 	{
@@ -82,7 +82,7 @@ static bool_t emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCm
  * @param   EmberAfIncomingMessage
  * @retval  None
  */
-static bool_t emberAfPreMessageReceivedCallback(EmberAfIncomingMessage* incommingMessage)
+bool emberAfPreMessageReceivedCallback(EmberAfIncomingMessage* incommingMessage)
 {
 	if(incommingMessage->apsFrame->clusterId == ACTIVE_ENDPOINTS_RESPONSE)
 	{

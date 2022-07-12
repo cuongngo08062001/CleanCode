@@ -34,6 +34,7 @@
 #include <app/framework/include/af.h>
 #include <zigbee-framework/zigbee-device-common.h>
 #include "source/app/send/send.h"
+#include "source/mid/led/led.h"
 /******************************************************************************/
 /*                     EXPORTED TYPES and DEFINITIONS                         */
 /******************************************************************************/
@@ -59,9 +60,9 @@
  * @param   source, destination, address
  * @retval  None
  */
-static void SEND_SendCommandUnicast(i8_t bySourceEndpoint,
-							 i8_t byDestinationEndpoint,
-							 i8_t byIndexOrDestination)
+static void SEND_SendCommandUnicast(u8_t bySourceEndpoint,
+							 u8_t byDestinationEndpoint,
+							 u8_t byIndexOrDestination)
 {
 	emberAfSetCommandEndpoints(bySourceEndpoint, bySourceEndpoint);
 	(void) emberAfSendCommandUnicast(EMBER_OUTGOING_DIRECT, byIndexOrDestination);
@@ -76,16 +77,16 @@ static void SEND_SendCommandUnicast(i8_t bySourceEndpoint,
  */
 static void SEND_FillBufferGlobalCommand(EmberAfClusterId clusterID,
 								  EmberAfAttributeId attributeID,
-								  i8_t byGlobalCommand,
-								  i8_t* pValue,
-								  i8_t byLength,
-								  i8_t byDataType)
+								  u8_t byGlobalCommand,
+								  u8_t* pValue,
+								  u8_t byLength,
+								  u8_t byDataType)
 {
-	i8_t data[MAX_DATA_COMMAND_SIZE];
-	data[0] = (i8_t)(attributeID & 0x00FF);
-	data[1] = (i8_t)((attributeID & 0xFF00)>>8);
+	u8_t data[MAX_DATA_COMMAND_SIZE];
+	data[0] = (u8_t)(attributeID & 0x00FF);
+	data[1] = (u8_t)((attributeID & 0xFF00)>>8);
 	data[2] = EMBER_SUCCESS;
-	data[3] = (i8_t)byDataType;
+	data[3] = (u8_t)byDataType;
 	memcpy(&data[4], pValue, pValue);
 
 	(void) emberAfFillExternalBuffer((ZCL_GLOBAL_COMMAND | ZCL_FRAME_CONTROL_CLIENT_TO_SERVER | ZCL_DISABLE_DEFAULT_RESPONSE_MASK),
@@ -105,9 +106,9 @@ static void SEND_FillBufferGlobalCommand(EmberAfClusterId clusterID,
  */
 void SEND_ReportInfoHc(void)
 {
-	i8_t modelID[13] = {12, 'S', 'W', '2','_','L','M','1','_','T','M','P','1'};
-	i8_t manufactureID[5] = {4, 'L', 'u', 'm', 'i'};
-	i8_t version = 1;
+	u8_t modelID[13] = {12, 'S', 'W', '2','_','L','M','1','_','T','M','P','1'};
+	u8_t manufactureID[5] = {4, 'L', 'u', 'm', 'i'};
+	u8_t version = 1;
 
 	if(emberAfNetworkState() != EMBER_JOINED_NETWORK){
 		return;
@@ -149,11 +150,11 @@ void SEND_ReportInfoHc(void)
  * @param   Endpoint, byValue
  * @retval  None
  */
-void SEND_OnOffStateReport(i8_t Endpoint, i8_t byValue){
+void SEND_OnOffStateReport(u8_t Endpoint, u8_t byValue){
 	SEND_FillBufferGlobalCommand(ZCL_ON_OFF_CLUSTER_ID,
 						   ZCL_ON_OFF_ATTRIBUTE_ID,
 						   ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-						   (i8_t*) &byValue,
+						   (u8_t*) &byValue,
 						   1,
 						   ZCL_BOOLEAN_ATTRIBUTE_TYPE);
 
@@ -164,7 +165,7 @@ void SEND_OnOffStateReport(i8_t Endpoint, i8_t byValue){
 	emberAfWriteServerAttribute(Endpoint,
 								ZCL_ON_OFF_CLUSTER_ID,
 								ZCL_ON_OFF_ATTRIBUTE_ID,
-								(i8_t*) &byValue,
+								(u8_t*) &byValue,
 								ZCL_BOOLEAN_ATTRIBUTE_TYPE);
 }
 
@@ -175,11 +176,11 @@ void SEND_OnOffStateReport(i8_t Endpoint, i8_t byValue){
  * @param   Endpoint, byValue
  * @retval  None
  */
-void SEND_PIRStateReport(i8_t byEndpoint, i8_t byValue){
+void SEND_PIRStateReport(u8_t byEndpoint, u8_t byValue){
 	SEND_FillBufferGlobalCommand(ZCL_IAS_ZONE_CLUSTER_ID,
 								 ZCL_ZONE_STATUS_ATTRIBUTE_ID,
 								 ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								 (i8_t*) &byValue,
+								 (u8_t*) &byValue,
 								 1,
 						   	   	 ZCL_BOOLEAN_ATTRIBUTE_TYPE);
 
@@ -190,7 +191,7 @@ void SEND_PIRStateReport(i8_t byEndpoint, i8_t byValue){
 	emberAfWriteServerAttribute(byEndpoint,
 								ZCL_IAS_ZONE_CLUSTER_ID,
 								ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								(i8_t*) &byValue,
+								(u8_t*) &byValue,
 								ZCL_BOOLEAN_ATTRIBUTE_TYPE);
 }
 
@@ -200,11 +201,11 @@ void SEND_PIRStateReport(i8_t byEndpoint, i8_t byValue){
  * @param   source, destination, address
  * @retval  None
  */
-void SEND_LDRStateReport(i8_t byEndpoint, i32_t byValue){
+void SEND_LDRStateReport(u8_t byEndpoint, u32_t byValue){
 	SEND_FillBufferGlobalCommand(ZCL_ILLUM_MEASUREMENT_CLUSTER_ID,
 								 ZCL_ILLUM_MEASURED_VALUE_ATTRIBUTE_ID,
 								 ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								 (i32_t*) &byValue,
+								 (u32_t*) &byValue,
 								 sizeof(byValue),
 								 ZCL_INT32U_ATTRIBUTE_TYPE);
 
@@ -215,7 +216,7 @@ void SEND_LDRStateReport(i8_t byEndpoint, i32_t byValue){
 	emberAfWriteServerAttribute(byEndpoint,
 								ZCL_ILLUM_MEASUREMENT_CLUSTER_ID,
 								ZCL_ILLUM_MEASURED_VALUE_ATTRIBUTE_ID,
-								(i32_t*) &byValue,
+								(u32_t*) &byValue,
 								ZCL_INT32U_ATTRIBUTE_TYPE);
 }
 
@@ -225,11 +226,11 @@ void SEND_LDRStateReport(i8_t byEndpoint, i32_t byValue){
  * @param   Endpoint, value
  * @retval  None
  */
-void SEND_TempStateReport(i8_t byEndpoint, i32_t byValue){
+void SEND_TempStateReport(u8_t byEndpoint, u32_t byValue){
 	SEND_FillBufferGlobalCommand(ZCL_TEMP_MEASUREMENT_CLUSTER_ID,
 								 ZCL_TEMP_MEASURED_VALUE_ATTRIBUTE_ID,
 								 ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								 (i32_t*) &byValue,
+								 (u32_t*) &byValue,
 								 sizeof(byValue),
 								 ZCL_INT32U_ATTRIBUTE_TYPE);
 
@@ -240,7 +241,7 @@ void SEND_TempStateReport(i8_t byEndpoint, i32_t byValue){
 	emberAfWriteServerAttribute(byEndpoint,
 								ZCL_TEMP_MEASUREMENT_CLUSTER_ID,
 								ZCL_TEMP_MEASURED_VALUE_ATTRIBUTE_ID,
-								(i32_t*) &byValue,
+								(u32_t*) &byValue,
 								ZCL_INT32U_ATTRIBUTE_TYPE);
 }
 
@@ -251,10 +252,10 @@ void SEND_TempStateReport(i8_t byEndpoint, i32_t byValue){
  * @param   byRemoteEndpoint, byLocalEndpoint, boValue, byNodeID
  * @retval  None
  */
-SEND_BindingInitToTarget(i8_t byRemoteEndpoint, i8_t byLocalEndpoint, bool_t boValue, i16_t byNodeID){
+SEND_BindingInitToTarget(u8_t byRemoteEndpoint, u8_t byLocalEndpoint, bool_t boValue, i16_t byNodeID){
 	EmberStatus status = EMBER_INVALID_BINDING_INDEX;
 
-	for(i8_t i = 0; i< EMBER_BINDING_TABLE_SIZE ; i++)
+	for(u8_t i = 0; i< EMBER_BINDING_TABLE_SIZE ; i++)
 		{
 			EmberBindingTableEntry binding;
 			status = emberGetBinding(i, &binding);

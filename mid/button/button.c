@@ -175,7 +175,7 @@ void buttonPressAndHoldEventHandler(void)
 {
 	emberEventControlSetInactive(buttonPressAndHoldEventControl);
 	bool_t boHoldTrigger =FALSE;
-	for(i8_t i=0; i < BUTTON_COUNT; i++)
+	for(u8_t i=0; i < BUTTON_COUNT; i++)
 	{
 		if(buttonArray[i].boPress ==TRUE)
 		{
@@ -209,7 +209,7 @@ void buttonPressAndHoldEventHandler(void)
 void buttonReleaseEventHandler(void)
 {
 	emberEventControlSetInactive(buttonReleaseEventControl);
-	for(i8_t i=0; i<BUTTON_COUNT; i++)
+	for(u8_t i=0; i<BUTTON_COUNT; i++)
 	{
 		if(buttonArray[i].boRelease == TRUE)
 		{
@@ -253,7 +253,7 @@ static void resetButtonParameter(u8_t byIndex)
  */
 static u8_t getButtonIndex(u8_t byPin)
 {
-	for(i8_t i=0; i < BUTTON_COUNT; i++)
+	for(u8_t i=0; i < BUTTON_COUNT; i++)
 	{
 		if(buttonArray[i].byPin == byPin)
 			return i;

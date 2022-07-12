@@ -118,8 +118,8 @@ static void initI2C(void)
 void si7020_Init (void){
 	I2C_TransferSeq_TypeDef    seq;
 	I2C_TransferReturn_TypeDef ret;
-	i8_t                    i2c_read_data[3];	// detect ID: si7020_DEVICE_ID  and checksum byte
-	i8_t                    i2c_write_data[2];	// command Electronic ID 2nd Byte
+	u8_t                    i2c_read_data[3];	// detect ID: si7020_DEVICE_ID  and checksum byte
+	u8_t                    i2c_write_data[2];	// command Electronic ID 2nd Byte
 
 
 
@@ -157,20 +157,20 @@ void si7020_Init (void){
  * @param   *buffer, command
  * @retval  Retval
  */
-bool_t si7020_Measure (i32_t *pBuffer, i8_t byCommand, i8_t byLengthData){
+bool_t si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData){
 	I2C_TransferSeq_TypeDef    seq;
 	I2C_TransferReturn_TypeDef retVal;
-	i8_t                    i2c_read_data[byLengthData];  		//i2c_read_data[0]: MSB		i2c_read_data[1]: LSB
-	i8_t                    i2c_write_data[1];
+	u8_t  byI2C_read_data[byLengthData];  		//i2c_read_data[0]: MSB		i2c_read_data[1]: LSB
+	u8_t  byI2C_write_data[1];
 
 	seq.addr  = SI7020_ADDR << 1; //(Address si7020: 0x40 << 1 for bit R/W)
 	seq.flags = I2C_FLAG_WRITE_READ;
 	/* Select command to issue */
-	i2c_write_data[0] = byCommand;			// command
-	seq.buf[0].data   = i2c_write_data;
+	byI2C_write_data[0] = byCommand;			// command
+	seq.buf[0].data   = byI2C_write_data;
 	seq.buf[0].len    = 1;
 	/* Select location/length of data to be read */
-	seq.buf[1].data = i2c_read_data;
+	seq.buf[1].data = byI2C_read_data;
 	seq.buf[1].len  = 2;
 
 	retVal = I2C_TransferInit(I2C0, &seq);
@@ -180,7 +180,7 @@ bool_t si7020_Measure (i32_t *pBuffer, i8_t byCommand, i8_t byLengthData){
 		retVal = I2C_Transfer(I2C0);
 	}
 
-	*pBuffer = ((i32_t) i2c_read_data[0] << 8) + (i2c_read_data[1]);   // // RH_CODE (MSB << 8) + LSB
+	*pBuffer = ((u32_t) byI2C_read_data[0] << 8) + (byI2C_read_data[1]);   // // RH_CODE (MSB << 8) + LSB
 	return true;
 }
 
@@ -190,8 +190,8 @@ bool_t si7020_Measure (i32_t *pBuffer, i8_t byCommand, i8_t byLengthData){
  * @param   *humiData
  * @retval  Humi
  */
-i32_t si7020_MeasureHumi (void){
-	i32_t humiData;
+u32_t si7020_MeasureHumi(void){
+	u32_t humiData;
 	bool_t retVal = si7020_Measure (&humiData, SI7020_READ_RH, 2);
 	if (retVal)
 		humiData = ( (((humiData) * 12500) >> 16) - 600 )/100; // Humi = ((Humi * 2500)/(0xFFu +1) - 600)/100
@@ -204,8 +204,8 @@ i32_t si7020_MeasureHumi (void){
  * @param   *tempData
  * @retval  Temp
  */
-i32_t si7020_MeasureTemp (void){
-	i32_t tempData;
+u32_t si7020_MeasureTemp (void){
+	u32_t tempData;
 	bool_t retVal = si7020_Measure (&tempData, SI7020_READ_TEMP, 2);
 	if (retVal)
 		tempData = ( (((tempData) * 17572) >> 16) - 4685 )/100; // Temp = ((Temp * 17572)/(0xFFu +1) - 4685)/100

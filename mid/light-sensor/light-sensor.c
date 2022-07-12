@@ -140,12 +140,12 @@ void lightSensor_Init(void)
  * @param  None
  * @retval None
  */
-i32_t readAdcPolling_LightSensorHandler(void)
+u32_t readAdcPolling_LightSensorHandler(void)
 {
-	volatile i32_t byRegistor;
-	volatile i32_t byLux = 0;
-	i32_t byValueADC=0;
-	i32_t byKalman_Light=0;
+	volatile u32_t byRegistor;
+	volatile u32_t byLux = 0;
+	u32_t byValueADC=0;
+	u32_t byKalman_Light=0;
 	emberEventControlSetInactive(readValueSensorLightControl);
 	IADC_Result_t iadcResult;
 	// Start IADC conversion
