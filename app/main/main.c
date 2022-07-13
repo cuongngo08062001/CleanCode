@@ -80,8 +80,8 @@ static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPr
 static void mainButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHoldingState);
 static void mainNetworkEventHandler(u8_t byNetworkResult);
 void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
-                                            EmberEUI64 exPanID,
-											u8_t byCost);
+                                               EmberEUI64 exPanID,
+											   u8_t byCost);
 EmberAfStatus emberAfPluginFindAndBindTargetStart(u8_t byEndpoint);
 EmberStatus emberAfPluginFindAndBindInitiatorStart(u8_t byEndpoint);
 /******************************************************************************/
@@ -373,7 +373,7 @@ static void mainNetworkEventHandler(u8_t byNetworkResult)
 void FindNetworkHandler(void)
 {
 	emberEventControlSetInactive(FindNetworkControl);
-	NETWORK_FindAndJoin();
+	networkFindAndJoin();
 	emberEventControlSetDelayMS(FindNetworkControl, DELAY_MS*10);
 
 }

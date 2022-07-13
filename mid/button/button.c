@@ -1,4 +1,4 @@
-/*******************************************************************************
+
 /*******************************************************************************
  *				 _ _                                             _ _
 				|   |                                           (_ _)
@@ -28,13 +28,15 @@
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
 #include <app/framework/include/af.h>
+#include <em_gpio.h>
+#include <gpiointerrupt.h>
 #include "source/mid/button/button.h"
 /******************************************************************************/
 /*                              CONTROL EVENTS                    	 		  */
 /******************************************************************************/
 
-EmberEventControl buttonPressAndHoldEventControl;
-EmberEventControl buttonReleaseEventControl;
+EmberEventControl ButtonPressAndHoldEventControl;
+EmberEventControl ButtonReleaseEventControl;
 /******************************************************************************/
 /*                     EXPORTED TYPES and DEFINITIONS                         */
 /******************************************************************************/
@@ -72,8 +74,8 @@ Buttonx_t buttonArray[BUTTON_COUNT] = BUTTON_INIT;
 /******************************************************************************/
 /*                              PRIVATE FUNTIONS                              */
 /******************************************************************************/
-static void buttonPressAndHoldEventHandle(void);
-static void buttonReleaseEventHandle(void);
+//static void ButtonPressAndHoldEventHandler(void);
+//static void ButtonReleaseEventHandler(void);
 static void halInternalButtonIsr(u8_t pin);
 static u8_t getButtonIndex(u8_t pin);
 static void resetButtonParameter(u8_t byIndex);
@@ -146,7 +148,7 @@ void halInternalButtonIsr(u8_t byPin)
 	  buttonArray[byButtonIndex].byPressCount++;
 	  if(buttonArray[byButtonIndex].boPress != TRUE)
 	  {
-		  emberEventControlSetActive(buttonPressAndHoldEventControl);
+		  emberEventControlSetActive(ButtonPressAndHoldEventControl);
 	  }
 
 	  buttonArray[byButtonIndex].boIsHolding=FALSE;
@@ -160,8 +162,8 @@ void halInternalButtonIsr(u8_t byPin)
 
 	  buttonArray[byButtonIndex].boRelease = TRUE;
 	  buttonArray[byButtonIndex].boPress = FALSE;
-	  emberEventControlSetInactive(buttonReleaseEventControl);
-	  emberEventControlSetDelayMS(buttonReleaseEventControl,BUTTON_CHECK_RELEASE_MS);
+	  emberEventControlSetInactive(ButtonReleaseEventControl);
+	  emberEventControlSetDelayMS(ButtonReleaseEventControl,BUTTON_CHECK_RELEASE_MS);
   }
 }
 
@@ -171,9 +173,9 @@ void halInternalButtonIsr(u8_t byPin)
  * @param	None
  * @retval	None
  */
-void buttonPressAndHoldEventHandler(void)
+void ButtonPressAndHoldEventHandler(void)
 {
-	emberEventControlSetInactive(buttonPressAndHoldEventControl);
+	emberEventControlSetInactive(ButtonPressAndHoldEventControl);
 	bool_t boHoldTrigger =FALSE;
 	for(u8_t i=0; i < BUTTON_COUNT; i++)
 	{
@@ -197,7 +199,7 @@ void buttonPressAndHoldEventHandler(void)
 		}
 	}
 	if(boHoldTrigger == TRUE)
-		emberEventControlSetDelayMS(buttonPressAndHoldEventControl,BUTTON_CHECK_HOLD_CYCLES_MS);
+		emberEventControlSetDelayMS(ButtonPressAndHoldEventControl,BUTTON_CHECK_HOLD_CYCLES_MS);
 }
 
 /*
@@ -206,9 +208,9 @@ void buttonPressAndHoldEventHandler(void)
  * @param	button, ButtonHodingr
  * @retval	None
  */
-void buttonReleaseEventHandler(void)
+void ButtonReleaseEventHandler(void)
 {
-	emberEventControlSetInactive(buttonReleaseEventControl);
+	emberEventControlSetInactive(ButtonReleaseEventControl);
 	for(u8_t i=0; i<BUTTON_COUNT; i++)
 	{
 		if(buttonArray[i].boRelease == TRUE)

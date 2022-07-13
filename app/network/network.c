@@ -39,7 +39,8 @@ EmberEventControl joinNetworkEventControl;
 /******************************************************************************/
 /*                              PRIVATE DATA                                  */
 /******************************************************************************/
-
+u32_t bytimeFindAndJoin = 0;
+networkEventHandler networkEventHandle = NULL;
 /******************************************************************************/
 /*                              EXPORTED DATA                                 */
 /******************************************************************************/
@@ -47,10 +48,8 @@ EmberEventControl joinNetworkEventControl;
 /******************************************************************************/
 /*                            PRIVATE FUNCTIONS                               */
 /******************************************************************************/
-u32_t bytimeFindAndJoin = 0;
-networkEventHandler networkEventHandle = NULL;
 static void joinNetworkEventHandler(void);
-static void NETWORK_StopFindAndJoin(void);
+static void networkStopFindAndJoin(void);
 /******************************************************************************/
 /*
  * @function 			: Network_Init
@@ -67,7 +66,7 @@ void networkInit(networkEventHandler networkResult)
 }
 
 /*
- * @function 			: NETWORK_FindAndJoin
+ * @function 			: networkFindAndJoin
  *
  * @brief				: Find network
  *
@@ -75,7 +74,7 @@ void networkInit(networkEventHandler networkResult)
  *
  * @return value		: None
  */
-void NETWORK_FindAndJoin(void)
+void networkFindAndJoin(void)
 {
 	if(emberAfNetworkState() == EMBER_NO_NETWORK)
 	{
@@ -85,7 +84,7 @@ void NETWORK_FindAndJoin(void)
 
 
 /*
- * @function 			: NETWORK_StopFindAndJoin
+ * @function 			: networkStopFindAndJoin
  *
  * @brief				: Stop find network
  *
@@ -93,7 +92,7 @@ void NETWORK_FindAndJoin(void)
  *
  * @return value		: None
  */
-static void NETWORK_StopFindAndJoin(void)
+static void networkStopFindAndJoin(void)
 {
 	emberAfPluginNetworkSteeringStop();
 }
@@ -137,7 +136,7 @@ bool emberAfStackStatusCallback(EmberStatus networkStatus)
 	{
 		if(bytimeFindAndJoin>0)// vao mang thanh cong
 		{
-			NETWORK_StopFindAndJoin();
+			networkStopFindAndJoin();
 			if(networkEventHandle != NULL)
 			{
 				networkEventHandle(NETWORK_JOIN_SUCCESS);

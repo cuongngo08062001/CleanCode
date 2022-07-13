@@ -52,7 +52,7 @@ typedef enum{
 /*                            EXPORTED FUNCTIONS                               */
 /******************************************************************************/
 typedef void (*networkEventHandler) (NetworkEvent networkEvent);
-void NETWORK_FindAndJoin(void);
+void networkFindAndJoin(void);
 void networkInit(networkEventHandler networkResult);
 /******************************************************************************/
 #endif /* SOURCE_APP_NETWORK_NETWORK_H_ */

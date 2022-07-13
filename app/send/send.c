@@ -1,5 +1,3 @@
-
-/*******************************************************************************
 /*******************************************************************************
  *				 _ _                                             _ _
 				|   |                                           (_ _)
@@ -61,8 +59,8 @@
  * @retval  None
  */
 static void SEND_SendCommandUnicast(u8_t bySourceEndpoint,
-							 u8_t byDestinationEndpoint,
-							 u8_t byIndexOrDestination)
+							        u8_t byDestinationEndpoint,
+							        u8_t byIndexOrDestination)
 {
 	emberAfSetCommandEndpoints(bySourceEndpoint, bySourceEndpoint);
 	(void) emberAfSendCommandUnicast(EMBER_OUTGOING_DIRECT, byIndexOrDestination);
@@ -205,7 +203,7 @@ void SEND_LDRStateReport(u8_t byEndpoint, u32_t byValue){
 	SEND_FillBufferGlobalCommand(ZCL_ILLUM_MEASUREMENT_CLUSTER_ID,
 								 ZCL_ILLUM_MEASURED_VALUE_ATTRIBUTE_ID,
 								 ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								 (u32_t*) &byValue,
+								 (u32_t*)&byValue,
 								 sizeof(byValue),
 								 ZCL_INT32U_ATTRIBUTE_TYPE);
 
@@ -252,14 +250,14 @@ void SEND_TempStateReport(u8_t byEndpoint, u32_t byValue){
  * @param   byRemoteEndpoint, byLocalEndpoint, boValue, byNodeID
  * @retval  None
  */
-SEND_BindingInitToTarget(u8_t byRemoteEndpoint, u8_t byLocalEndpoint, bool_t boValue, i16_t byNodeID){
+SEND_BindingInitToTarget(u8_t byRemoteEndpoint, u8_t byLocalEndpoint, bool_t boValue, u16_t byNodeID){
 	EmberStatus status = EMBER_INVALID_BINDING_INDEX;
 
 	for(u8_t i = 0; i< EMBER_BINDING_TABLE_SIZE ; i++)
 		{
 			EmberBindingTableEntry binding;
 			status = emberGetBinding(i, &binding);
-			i16_t bindingNodeID = emberGetBindingRemoteNodeId(i);
+			u16_t bindingNodeID = emberGetBindingRemoteNodeId(i);
 
 			// check status send
 			if(status != EMBER_SUCCESS)

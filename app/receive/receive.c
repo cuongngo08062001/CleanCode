@@ -42,7 +42,7 @@
 /******************************************************************************/
 /*                            PRIVATE FUNCTIONS                               */
 /******************************************************************************/
-u8_t checkBindingTable(u8_t byLocalEndpoint);
+static u8_t checkBindingTable(u8_t byLocalEndpoint);
 bool emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd);
 static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCmd);
 static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd);
@@ -100,10 +100,10 @@ bool emberAfPreMessageReceivedCallback(EmberAfIncomingMessage* incommingMessage)
  */
 static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCmd)
 {
-	uint8_t commandID = clusterCmd->commandId;
-	uint8_t endPoint  = clusterCmd->apsFrame -> destinationEndpoint;
-	uint8_t payloadOffset = clusterCmd->payloadStartIndex;		// Gan offset = startindex
-	uint8_t level;
+	u8_t commandID = clusterCmd->commandId;
+	u8_t endPoint  = clusterCmd->apsFrame -> destinationEndpoint;
+	u8_t payloadOffset = clusterCmd->payloadStartIndex;		// Gan offset = startindex
+	u8_t level;
 	uint16_t transitionTime;
 	emberAfCorePrintln("ClusterID: 0x%2X", clusterCmd->apsFrame->clusterId);
 /******************************************LEVEL CONTROL LED***************************************************************************/
@@ -156,9 +156,9 @@ static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCm
  */
 static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 {
-	uint8_t commandID = clusterCmd->commandId;
-	uint8_t localEndpoint = clusterCmd ->apsFrame -> destinationEndpoint;
-	uint8_t remoteEndpoint = clusterCmd->apsFrame -> sourceEndpoint;
+	u8_t commandID = clusterCmd->commandId;
+	u8_t localEndpoint = clusterCmd ->apsFrame -> destinationEndpoint;
+	u8_t remoteEndpoint = clusterCmd->apsFrame -> sourceEndpoint;
 	uint16_t IgnoreNodeID = clusterCmd->source;
 /************************************ON-OFF LED******************************************************************************************/
 	emberAfCorePrintln("RECEIVE_HandleOnOffCluster SourceEndpoint = %d, RemoteEndpoint = %d, commandID = %d, nodeID %2X\n",remoteEndpoint,localEndpoint,commandID,IgnoreNodeID);
@@ -241,10 +241,10 @@ static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
  */
 
 
-uint8_t checkBindingTable(uint8_t localEndpoint)
+static u8_t checkBindingTable(u8_t localEndpoint)
 {
-	uint8_t index = 0;
-	for(uint8_t i=0; i< EMBER_BINDING_TABLE_SIZE; i++)
+	u8_t index = 0;
+	for(u8_t i=0; i< EMBER_BINDING_TABLE_SIZE; i++)
 	{
 		EmberBindingTableEntry binding;
 		if(emberGetBindingRemoteNodeId(i) != EMBER_SLEEPY_BROADCAST_ADDRESS){
