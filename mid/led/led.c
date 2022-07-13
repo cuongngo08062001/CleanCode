@@ -63,7 +63,7 @@ typedef struct {
 /******************************************************************************/
 /*                              CONTROL EVENTS                    	 		  */
 /******************************************************************************/
-EmberEventControl ledOneToggleEventControl,ledTwoToggleEventControl;
+EmberEventControl LedOneToggleEventControl,LedTwoToggleEventControl;
 EmberEventControl *ledEventControl[LED_RGB_COUNT];
 
 /******************************************************************************/
@@ -105,8 +105,8 @@ void ledInit(void)
 	}
 	turnOffRBGLed(LED_ONE);
 	turnOffRBGLed(LED_TWO);
-	ledEventControl[LED_ONE] =(EmberEventControl *) &ledOneToggleEventControl;
-	ledEventControl[LED_TWO] =(EmberEventControl *) &ledTwoToggleEventControl;
+	ledEventControl[LED_ONE] =(EmberEventControl *) &LedOneToggleEventControl;
+	ledEventControl[LED_TWO] =(EmberEventControl *) &LedTwoToggleEventControl;
 }
 
 /**
@@ -212,7 +212,7 @@ void toggleLedHandle(LedNumber ledIndex)
  */
 void ledOneToggleEventHandler(void)
 {
-	emberEventControlSetInactive(ledOneToggleEventControl);
+	emberEventControlSetInactive(LedOneToggleEventControl);
 	switch(ledAction[LED_ONE].boLedBlinkMode)
 	{
 	case LED_TOGGLE:
@@ -232,7 +232,7 @@ void ledOneToggleEventHandler(void)
  */
 void ledTwoToggleEventHandler(void)
 {
-	emberEventControlSetInactive(ledTwoToggleEventControl);
+	emberEventControlSetInactive(LedTwoToggleEventControl);
 	switch(ledAction[LED_TWO].boLedBlinkMode)
 	{
 	case LED_TOGGLE:

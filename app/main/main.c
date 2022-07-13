@@ -249,7 +249,7 @@ static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPr
  * 			ButtonState_e buttonHoldingHandler
  * @retval  None
  */
-static void Main_ButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHoldingState)
+static void mainButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHoldingState)
 {
 	switch(buttonHoldingState)
 	{
@@ -304,7 +304,7 @@ void mainStateEventHandler(void)
 			g_systemState = IDLE_STATE;
 			EmberNetworkStatus networkStatus = emberAfNetworkState();
 			if (networkStatus != EMBER_NO_NETWORK) {
-			    SendZigDevRequest();
+			    //SendZigDevRequest();
 				emberClearBindingTable();
 				emberLeaveNetwork();
 			} else {
