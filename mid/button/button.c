@@ -42,7 +42,7 @@ EmberEventControl ButtonReleaseEventControl;
 /******************************************************************************/
 #define BUTTON_COUNT					2
 #define GPIO_DOUT						0
-#define BUTTON_DEBOUNCE					5
+#define BUTTON_DeBOUNCE					5
 #define BUTTON_CHECK_HOLD_CYCLES_MS		200
 #define BUTTON_CHECK_RELEASE_MS			500
 
@@ -84,7 +84,8 @@ static void resetButtonParameter(u8_t byIndex);
 /*
  * @func	buttonInit
  * @brief	Initialize Button
- * @param	ButtonHoding, ButtonPress
+ * @param	pButtonHoldingEvent_t ButtonHoding
+ *          pButtonPressEvent_t ButtonPress
  * @retval	None
  */
 void buttonInit(pButtonHoldingEvent_t ButtonHoding,pButtonPressEvent_t ButtonPress)
@@ -118,14 +119,14 @@ void buttonInit(pButtonHoldingEvent_t ButtonHoding,pButtonPressEvent_t ButtonPre
 /*
  * @func	halInternalButtonIsr
  * @brief	IRQ button
- * @param	pin
+ * @param	u8_t byPin (Pin of Button)
  * @retval	None
  */
 void halInternalButtonIsr(u8_t byPin)
 {
-  u8_t buttonStateNow;
-  u8_t buttonStatePrev;
-  u32_t debounce;
+  u8_t byButtonStateNow;
+  u8_t byButtonStatePrev;
+  u32_t byDebounce;
   u8_t byButtonIndex;
 
   byButtonIndex = getButtonIndex(byPin);
@@ -133,17 +134,17 @@ void halInternalButtonIsr(u8_t byPin)
   if(byButtonIndex==-1)
 	  return;
 
-  buttonStateNow = GPIO_PinInGet(buttonArray[byButtonIndex].GPIO_Port, buttonArray[byButtonIndex].byPin);
-  for ( debounce = 0;
-        debounce < BUTTON_DEBOUNCE;
-        debounce = (buttonStateNow == buttonStatePrev) ? debounce + 1 : 0 ) {
-    buttonStatePrev = buttonStateNow;
-    buttonStateNow = GPIO_PinInGet(buttonArray[byButtonIndex].GPIO_Port, buttonArray[byButtonIndex].byPin);
+  byButtonStateNow = GPIO_PinInGet(buttonArray[byButtonIndex].GPIO_Port, buttonArray[byButtonIndex].byPin);
+  for ( byDebounce = 0;
+        byDebounce < BUTTON_DeBOUNCE;
+        byDebounce = (byButtonStateNow == byButtonStatePrev) ? byDebounce + 1 : 0 ) {
+    byButtonStatePrev = byButtonStateNow;
+    byButtonStateNow = GPIO_PinInGet(buttonArray[byButtonIndex].GPIO_Port, buttonArray[byButtonIndex].byPin);
   }
 
-  buttonArray[byButtonIndex].boState = buttonStateNow;
+  buttonArray[byButtonIndex].boState = byButtonStateNow;
 
-  if(buttonStateNow == BUTTON_PRESS)
+  if(byButtonStateNow == BUTTON_PRESS)
   {
 	  buttonArray[byButtonIndex].byPressCount++;
 	  if(buttonArray[byButtonIndex].boPress != TRUE)
@@ -176,7 +177,7 @@ void halInternalButtonIsr(u8_t byPin)
 void ButtonPressAndHoldEventHandler(void)
 {
 	emberEventControlSetInactive(ButtonPressAndHoldEventControl);
-	bool_t boHoldTrigger =FALSE;
+	bool_t boHoldTrigger = FALSE;
 	for(u8_t i=0; i < BUTTON_COUNT; i++)
 	{
 		if(buttonArray[i].boPress ==TRUE)
@@ -205,7 +206,7 @@ void ButtonPressAndHoldEventHandler(void)
 /*
  * @func	buttonReleaseEventHandle
  * @brief	Event Button Handler
- * @param	button, ButtonHodingr
+ * @param	None
  * @retval	None
  */
 void ButtonReleaseEventHandler(void)
@@ -217,7 +218,7 @@ void ButtonReleaseEventHandler(void)
 		{
 			if(ButttonPressAndHoldingCallbackFunc != NULL)
 			{
-				if(buttonArray[i].boIsHolding==FALSE)
+				if(buttonArray[i].boIsHolding == FALSE)
 				{
 					ButttonPressAndHoldingCallbackFunc(i, buttonArray[i].byPressCount >= PRESS_MAX ? UNKNOWN:buttonArray[i].byPressCount);
 				}else
@@ -234,7 +235,7 @@ void ButtonReleaseEventHandler(void)
 /*
  * @func	resetButtonParameter
  * @brief	Reset parameter
- * @param	byIndex
+ * @param	u8_t byIndex (Index of Pin Button)
  * @retval	None
  */
 static void resetButtonParameter(u8_t byIndex)
@@ -250,8 +251,8 @@ static void resetButtonParameter(u8_t byIndex)
 /*
  * @func	getButtonbyIndex
  * @brief	get number button
- * @param	pin
- * @retval	None
+ * @param	u8_t bypin : Pin of Button
+ * @retval	index of button
  */
 static u8_t getButtonIndex(u8_t byPin)
 {

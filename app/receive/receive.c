@@ -53,8 +53,8 @@ static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd);
 /**
  * @func    emberAfPreCommandReceivedCallback
  * @brief   Process Command Received
- * @param   EmberAfClusterCommand
- * @retval  static bool_tean
+ * @param   EmberAfClusterCommand clusterCmd (Command Cluster)
+ * @retval  TRUE or FALSE
  */
 bool emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd)
 {
@@ -72,31 +72,31 @@ bool emberAfPreCommandReceivedCallback(EmberAfClusterCommand* clusterCmd)
 				break;
 		}
 	}
-	return false;
+	return FALSE;
 }
 
 
 /**
  * @func    emberAfPreMessageReceivedCallback
  * @brief   Process Pre message received
- * @param   EmberAfIncomingMessage
- * @retval  None
+ * @param   EmberAfIncomingMessage incommingMessage (message in comming)
+ * @retval  TRUE or FALSE
  */
 bool emberAfPreMessageReceivedCallback(EmberAfIncomingMessage* incommingMessage)
 {
 	if(incommingMessage->apsFrame->clusterId == ACTIVE_ENDPOINTS_RESPONSE)
 	{
-		return true;
+		return TRUE;
 	}
- return false;
+ return FALSE;
 }
 
 
 /**
  * @func    RECEIVE_HandleLevelControlCluster
  * @brief   Handler Level led
- * @param   EmberAfClusterCommand
- * @retval  None
+ * @param   EmberAfClusterCommand clusterCmd
+ * @retval  TRUE or FALSE
  */
 static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCmd)
 {
@@ -144,14 +144,14 @@ static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCm
 				default:
 					break;
 				}
-		return false;
+		return FALSE;
 }
 
 
 /**
  * @func    RECEIVE_HandleOnOffCluster
  * @brief   Handler On/Off command
- * @param   EmberAfClusterCommand
+ * @param   EmberAfClusterCommand clusterCmd (Command Cluster)
  * @retval  static bool_t
  */
 static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
@@ -177,7 +177,7 @@ static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 					if(checkBindingTable(localEndpoint) >= 1)
 					{
 
-						SEND_BindingInitToTarget(remoteEndpoint, localEndpoint, false, IgnoreNodeID);
+						SEND_BindingInitToTarget(remoteEndpoint, localEndpoint, FALSE, IgnoreNodeID);
 					}
 				}
 				if(localEndpoint == 2)
@@ -207,7 +207,7 @@ static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 					SEND_OnOffStateReport(localEndpoint, LED_ON);
 					if(checkBindingTable(localEndpoint) >= 1)
 					{
-						SEND_BindingInitToTarget(remoteEndpoint, localEndpoint, true, IgnoreNodeID);
+						SEND_BindingInitToTarget(remoteEndpoint, localEndpoint, TRUE, IgnoreNodeID);
 					}
 				}
 				if(localEndpoint == 2)
@@ -227,7 +227,7 @@ static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 	default:
 		break;
 	}
-	return false;
+	return FALSE;
 }
 
 /*
@@ -237,25 +237,25 @@ static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
  *
  * @parameter			: localEndpoint
  *
- * @return value		: True or false
+ * @return value		: Index in Binding Table
  */
 
 
-static u8_t checkBindingTable(u8_t localEndpoint)
+static u8_t checkBindingTable(u8_t byLocalEndpoint)
 {
-	u8_t index = 0;
-	for(u8_t i=0; i< EMBER_BINDING_TABLE_SIZE; i++)
+	u8_t byIndex = 0;
+	for(u8_t i = 0; i< EMBER_BINDING_TABLE_SIZE; i++)
 	{
 		EmberBindingTableEntry binding;
 		if(emberGetBindingRemoteNodeId(i) != EMBER_SLEEPY_BROADCAST_ADDRESS){
 			emberGetBinding(i, &binding);
-			if(binding.local == localEndpoint && (binding.type == EMBER_UNICAST_BINDING))
+			if(binding.local == byLocalEndpoint && (binding.type == EMBER_UNICAST_BINDING))
 			{
-				index++;
+			    byIndex++;
 			}
 		}
 	}
-	return index;
+	return byIndex;
 }
 
 

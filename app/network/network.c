@@ -55,9 +55,9 @@ static void networkStopFindAndJoin(void);
  *
  * @brief				: Handle event network.
  *
- * @parameter			: g_networkEventHandler
+ * @param : networkResult (State Network)
  *
- * @return value		: None
+ * @return : None
  */
 void networkInit(networkEventHandler networkResult)
 {
@@ -123,7 +123,7 @@ void JoinNetworkEventHandler(void)
  *
  * @brief				: Stack Status
  *
- * @parameter			: EmberStatus
+ * @param  			    : networkStatus (Store Status Network: SUCCESS, NO NETWORK, LOST,...)
  *
  * @return value		: TRUE or FALSE
  */

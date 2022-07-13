@@ -77,7 +77,7 @@ SystemState g_systemState = POWER_ON_STATE;
 /*                            PRIVATE FUNCTIONS                               */
 /******************************************************************************/
 static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPressState);
-static void mainButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHoldingState);
+static void mainButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHoldState);
 static void mainNetworkEventHandler(u8_t byNetworkResult);
 void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
                                                EmberEUI64 exPanID,
@@ -152,8 +152,8 @@ void emberAfMainInitCallback(void)
 /**
  * @func    Main_byButtonPressCallbackHandler
  * @brief   Handler State Press Button
- * @param   u8_t byButton
- * 			ButtonState_e buttonPressState
+ * @param   u8_t byButtonId(One,Two)
+ * 			ButtonState_e buttonPressState(Press..., Hold...)
  * @retval  None
  */
 static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPressState)
@@ -245,13 +245,13 @@ static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPr
 /**
  * @func    Main_ButtonHoldCallbackHandler
  * @brief   Handler State Holding Button
- * @param   u8_t byButton
- * 			ButtonState_e buttonHoldingHandler
+ * @param   u8_t byButtonId(One,Two)
+ *          ButtonState_e buttonPressState(Press..., Hold...)
  * @retval  None
  */
-static void mainButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHoldingState)
+static void mainButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHoldState)
 {
-	switch(buttonHoldingState)
+	switch(buttonHoldState)
 	{
 	case HOLD_1s:
 		emberAfCorePrintln("SW1: 1 s");
@@ -422,12 +422,14 @@ void ReadValueTempHumiHandler(void)
 /**
  * @func    emberIncomingManyToOneRouteRequestHandler
  * @brief  	Send a Many to One Message to All Devices
- * @param   None
+ * @param   EmberNodeId addressNetwork (16 bit Zigbee Network Address)
+            EmberEUI64 exPanID (64-bit ID an IEEE address )
+            u8_t byCost
  * @retval  None
  */
 void emberIncomingManyToOneRouteRequestHandler(EmberNodeId addressNetwork,
-                                            EmberEUI64 exPanID,
-                                            u8_t byCost)
+                                               EmberEUI64 exPanID,
+                                               u8_t byCost)
 {
 	// handle for MTORRs
 	emberAfCorePrintln("Received MTORRs");

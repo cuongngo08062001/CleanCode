@@ -138,7 +138,7 @@ void lightSensor_Init(void)
  * @func   readAdcPolling_LightSensorHandler
  * @brief  Read value from ADC
  * @param  None
- * @retval None
+ * @retval byLux
  */
 u32_t readAdcPolling_LightSensorHandler(void)
 {

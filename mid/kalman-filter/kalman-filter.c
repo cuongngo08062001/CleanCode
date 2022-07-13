@@ -91,9 +91,9 @@ float KalmanFilter_getEstimateError(void) {
  * @param  sensorValue
  * @retval uint32_t
  */
-uint32_t Kalman_sensor(uint32_t sensorValue)
+uint32_t Kalman_sensor(u32_t sensorValue)
 {
-	uint32_t sensorValueAfterFilter = KalmanFilter_updateEstimate(sensorValue);
+	u32_t sensorValueAfterFilter = KalmanFilter_updateEstimate(sensorValue);
 
 	return sensorValueAfterFilter;
 }

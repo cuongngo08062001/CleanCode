@@ -112,7 +112,7 @@ void ledInit(void)
 /**
  * @func    turnOffRBGLed
  * @brief   Turn off number led
- * @param   ledNumber
+ * @param   LedNumber ledIndex (index of Led)
  * @retval  None
  */
 void turnOffRBGLed(LedNumber ledIndex)
@@ -126,19 +126,20 @@ void turnOffRBGLed(LedNumber ledIndex)
 /**
  * @func    turnOnLed
  * @brief   Turn on led
- * @param   ledNumber, ledColor_e
+ * @param   LedNumber index  (index of Led)
+ *          LedNumber LedColor (Color of Led: Green, Blue, Red, Pink, Yellow)
  * @retval  None
  */
-void turnOnLed(LedNumber index, LedNumber LedColor)
+void turnOnLed(LedNumber byIndex, LedNumber LedColor)
 {
 	for(i8_t j=0;j<LED_RGB_ELEMENT;j++)
 	{
 		if(((LedColor >> j) & 0x01) == 1)
 		{
-			GPIO_PinOutClear(led_Array[index][j].GPIO_Port, led_Array[index][j].byPin);
+			GPIO_PinOutClear(led_Array[byIndex][j].GPIO_Port, led_Array[byIndex][j].byPin);
 		}
 		else{
-			GPIO_PinOutSet(led_Array[index][j].GPIO_Port, led_Array[index][j].byPin);
+			GPIO_PinOutSet(led_Array[byIndex][j].GPIO_Port, led_Array[byIndex][j].byPin);
 		}
 	}
 }
@@ -146,7 +147,11 @@ void turnOnLed(LedNumber index, LedNumber LedColor)
 /**
  * @func    toggleLed
  * @brief   toggled LED
- * @param   ledNumber, ledColor_e, toggleTime, onTimeMs, offTimeMs
+ * @param   LedNumber ledIndex, (index of Led)
+ *          LedColor LedColor, (Color of Led: Green, Blue, Red, Pink, Yellow)
+ *          u8_t byToggleTime, (Times of Toggle Led)
+ *          u32_t byOnTimeMs,
+ *          u32_t byOffTimeMs
  * @retval  None
  */
 void toggleLed(LedNumber ledIndex, LedColor LedColor, u8_t byToggleTime, u32_t byOnTimeMs, u32_t byOffTimeMs)
@@ -163,7 +168,7 @@ void toggleLed(LedNumber ledIndex, LedColor LedColor, u8_t byToggleTime, u32_t b
 /**
  * @func    toggleLedHandle
  * @brief   Event Led Handler
- * @param   ledNumber
+ * @param   LedNumber ledIndex (index of Led)
  * @retval  None
  */
 void toggleLedHandle(LedNumber ledIndex)

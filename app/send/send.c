@@ -55,7 +55,9 @@
 /**
  * @func    SEND_SendCommandUnicast
  * @brief   Send uinicast command
- * @param   source, destination, address
+ * @param   u8_t bySourceEndpoint,
+            u8_t byDestinationEndpoint,
+            u8_t byIndexOrDestinatio
  * @retval  None
  */
 static void SEND_SendCommandUnicast(u8_t bySourceEndpoint,
@@ -70,7 +72,12 @@ static void SEND_SendCommandUnicast(u8_t bySourceEndpoint,
 /**
  * @func    SEND_FillBufferGlobalCommand
  * @brief   Send fill buffer global command
- * @param   clusterID, attributeID, byGlobalCommand, pValue, byLength, byDataType
+ * @param   EmberAfClusterId clusterID,
+            EmberAfAttributeId attributeID,
+            u8_t byGlobalCommand,
+            u8_t* pValue,
+            u8_t byLength,
+            u8_t byDataType
  * @retval  None
  */
 static void SEND_FillBufferGlobalCommand(EmberAfClusterId clusterID,
@@ -80,18 +87,18 @@ static void SEND_FillBufferGlobalCommand(EmberAfClusterId clusterID,
 								  u8_t byLength,
 								  u8_t byDataType)
 {
-	u8_t data[MAX_DATA_COMMAND_SIZE];
-	data[0] = (u8_t)(attributeID & 0x00FF);
-	data[1] = (u8_t)((attributeID & 0xFF00)>>8);
-	data[2] = EMBER_SUCCESS;
-	data[3] = (u8_t)byDataType;
-	memcpy(&data[4], pValue, pValue);
+	u8_t bydata[MAX_DATA_COMMAND_SIZE];
+	bydata[0] = (u8_t)(attributeID & 0x00FF);
+	bydata[1] = (u8_t)((attributeID & 0xFF00)>>8);
+	bydata[2] = EMBER_SUCCESS;
+	bydata[3] = (u8_t)byDataType;
+	memcpy(&bydata[4], pValue, pValue);
 
 	(void) emberAfFillExternalBuffer((ZCL_GLOBAL_COMMAND | ZCL_FRAME_CONTROL_CLIENT_TO_SERVER | ZCL_DISABLE_DEFAULT_RESPONSE_MASK),
 									  clusterID,
 									  byGlobalCommand,
 									  "b",
-									  data,
+									  bydata,
 									  byLength + 4);
 }
 
@@ -104,9 +111,9 @@ static void SEND_FillBufferGlobalCommand(EmberAfClusterId clusterID,
  */
 void SEND_ReportInfoHc(void)
 {
-	u8_t modelID[13] = {12, 'S', 'W', '2','_','L','M','1','_','T','M','P','1'};
-	u8_t manufactureID[5] = {4, 'L', 'u', 'm', 'i'};
-	u8_t version = 1;
+	u8_t byModelID[13] = {12, 'S', 'W', '2','_','L','M','1','_','T','M','P','1'};
+	u8_t byManufactureID[5] = {4, 'L', 'u', 'm', 'i'};
+	u8_t byVersion = 1;
 
 	if(emberAfNetworkState() != EMBER_JOINED_NETWORK){
 		return;
@@ -114,7 +121,7 @@ void SEND_ReportInfoHc(void)
 	SEND_FillBufferGlobalCommand(ZCL_BASIC_CLUSTER_ID,
 								 ZCL_MODEL_IDENTIFIER_ATTRIBUTE_ID,
 								 ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								 modelID,
+								 byModelID,
 								 13,
 								 ZCL_CHAR_STRING_ATTRIBUTE_TYPE);
 	SEND_SendCommandUnicast(SOURCE_ENDPOINT_PRIMARY,
@@ -124,7 +131,7 @@ void SEND_ReportInfoHc(void)
 	SEND_FillBufferGlobalCommand(ZCL_BASIC_CLUSTER_ID,
 								 ZCL_MANUFACTURER_NAME_ATTRIBUTE_ID,
 								 ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								 manufactureID,
+								 byManufactureID,
 								 5,
 								 ZCL_CHAR_STRING_ATTRIBUTE_TYPE);
 	SEND_SendCommandUnicast(SOURCE_ENDPOINT_PRIMARY,
@@ -133,7 +140,7 @@ void SEND_ReportInfoHc(void)
 	SEND_FillBufferGlobalCommand(ZCL_BASIC_CLUSTER_ID,
 								 ZCL_APPLICATION_VERSION_ATTRIBUTE_ID,
 								 ZCL_READ_ATTRIBUTES_RESPONSE_COMMAND_ID,
-								 &version,
+								 &byVersion,
 								 1,
 								 ZCL_INT8U_ATTRIBUTE_TYPE);
 	SEND_SendCommandUnicast(SOURCE_ENDPOINT_PRIMARY,
@@ -145,7 +152,8 @@ void SEND_ReportInfoHc(void)
 /**
  * @func    SEND_OnOffStateReport
  * @brief   Send On/Off State
- * @param   Endpoint, byValue
+ * @param   u8_t Endpoint
+ *          u8_t byValue
  * @retval  None
  */
 void SEND_OnOffStateReport(u8_t Endpoint, u8_t byValue){
@@ -171,7 +179,8 @@ void SEND_OnOffStateReport(u8_t Endpoint, u8_t byValue){
 /**
  * @func    SEND_PIRStateReport
  * @brief   Send PIR byValue to App
- * @param   Endpoint, byValue
+ * @param   u8_t byEndpoint
+ *          u8_t byValue
  * @retval  None
  */
 void SEND_PIRStateReport(u8_t byEndpoint, u8_t byValue){
@@ -196,7 +205,8 @@ void SEND_PIRStateReport(u8_t byEndpoint, u8_t byValue){
 /**
  * @func    SEND_LDRStateReport
  * @brief   Send lux value to app
- * @param   source, destination, address
+ * @param   u8_t byEndpoint
+ *          u32_t byValue
  * @retval  None
  */
 void SEND_LDRStateReport(u8_t byEndpoint, u32_t byValue){
@@ -221,7 +231,8 @@ void SEND_LDRStateReport(u8_t byEndpoint, u32_t byValue){
 /**
  * @func    SEND_TempStateReport
  * @brief   Send Temp value
- * @param   Endpoint, value
+ * @param   u8_t byEndpoint
+ *          u32_t byValue
  * @retval  None
  */
 void SEND_TempStateReport(u8_t byEndpoint, u32_t byValue){
@@ -247,10 +258,13 @@ void SEND_TempStateReport(u8_t byEndpoint, u32_t byValue){
 /**
  * @func    SEND_BindingInitToTarget
  * @brief   Send Binding command
- * @param   byRemoteEndpoint, byLocalEndpoint, boValue, byNodeID
+ * @param   u8_t byRemoteEndpoint,
+ *          u8_t byLocalEndpoint,
+ *          bool_t boValue,
+ *          u16_t byNodeID
  * @retval  None
  */
-SEND_BindingInitToTarget(u8_t byRemoteEndpoint, u8_t byLocalEndpoint, bool_t boValue, u16_t byNodeID){
+void SEND_BindingInitToTarget(u8_t byRemoteEndpoint, u8_t byLocalEndpoint, bool_t boValue, u16_t byNodeID){
 	EmberStatus status = EMBER_INVALID_BINDING_INDEX;
 
 	for(u8_t i = 0; i< EMBER_BINDING_TABLE_SIZE ; i++)

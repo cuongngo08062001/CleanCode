@@ -154,8 +154,10 @@ void Si7020_Init (void){
 /**
  * @func    si7020_Measure
  * @brief   Measure
- * @param   *buffer, command
- * @retval  Retval
+ * @param   u32_t *pBuffer
+ *          u8_t byCommand
+ *          u8_t byLengthData
+ * @retval  TRUE or FALSE
  */
 bool_t Si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData){
 	I2C_TransferSeq_TypeDef    seq;
@@ -187,27 +189,27 @@ bool_t Si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData){
 /**
  * @func    si7020_MeasureTempAndHumi
  * @brief   Measure Humi
- * @param   *humiData
- * @retval  Humi
+ * @param   None
+ * @retval  byHumiValue
  */
 u32_t Si7020_MeasureHumi(void){
-	u32_t humiData;
-	bool_t retVal = Si7020_Measure (&humiData, SI7020_READ_RH, 2);
+	u32_t byHumiValue;
+	bool_t retVal = Si7020_Measure (&byHumiValue, SI7020_READ_RH, 2);
 	if (retVal)
-		humiData = ( (((humiData) * 12500) >> 16) - 600 )/100; // Humi = ((Humi * 2500)/(0xFFu +1) - 600)/100
-	return humiData;
+	    byHumiValue = ( (((byHumiValue) * 12500) >> 16) - 600 )/100; // Humi = ((Humi * 2500)/(0xFFu +1) - 600)/100
+	return byHumiValue;
 }
 
 /**
  * @func    si7020_MeasureTempAndHumi
  * @brief   Measure Temp
- * @param   *tempData
- * @retval  Temp
+ * @param
+ * @retval  byTempValue
  */
 u32_t Si7020_MeasureTemp (void){
-	u32_t tempData;
-	bool_t retVal = Si7020_Measure (&tempData, SI7020_READ_TEMP, 2);
+	u32_t byTempValue;
+	bool_t retVal = Si7020_Measure (&byTempValue, SI7020_READ_TEMP, 2);
 	if (retVal)
-		tempData = ( (((tempData) * 17572) >> 16) - 4685 )/100; // Temp = ((Temp * 17572)/(0xFFu +1) - 4685)/100
-	return tempData;
+	    byTempValue = ( (((byTempValue) * 17572) >> 16) - 4685 )/100; // Temp = ((Temp * 17572)/(0xFFu +1) - 4685)/100
+	return byTempValue;
 }
