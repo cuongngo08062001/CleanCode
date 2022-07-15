@@ -53,11 +53,55 @@
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
 void SendZigDevRequest(void);
+/**
+ * @func    SEND_OnOffStateReport
+ * @brief   Send On/Off State
+ * @param   u8_t Endpoint
+ *          u8_t byValue
+ * @retval  None
+ */
 void SEND_OnOffStateReport(u8_t byEndpoint, u8_t byValue);
+
+/**
+ * @func    SEND_ReportInfoHc
+ * @brief   Send Report to HC
+ * @param   None
+ * @retval  None
+ */
 void SEND_ReportInfoHc(void);
+/**
+ * @func    SEND_PIRStateReport
+ * @brief   Send PIR byValue to App
+ * @param   u8_t byEndpoint
+ *          u8_t byValue
+ * @retval  None
+ */
 void SEND_PIRStateReport(u8_t byEndpoint, u8_t byValue);
+/**
+ * @func    SEND_LDRStateReport
+ * @brief   Send lux value to app
+ * @param   u8_t byEndpoint
+ *          u32_t byValue
+ * @retval  None
+ */
 void SEND_LDRStateReport(u8_t byEndpoint, u32_t byValue);
+/**
+ * @func    SEND_TempStateReport
+ * @brief   Send Temp value
+ * @param   u8_t byEndpoint
+ *          u32_t byValue
+ * @retval  None
+ */
 void SEND_TempStateReport(u8_t byEndpoint, u32_t byValue);
+/**
+ * @func    SEND_BindingInitToTarget
+ * @brief   Send Binding command
+ * @param   u8_t byRemoteEndpoint,
+ *          u8_t byLocalEndpoint,
+ *          bool_t boValue,
+ *          u16_t byNodeID
+ * @retval  None
+ */
 void SEND_BindingInitToTarget(u8_t byRemoteEndpoint, u8_t byLocalEndpoint, bool_t boValue, i16_t byNodeID);
 /******************************************************************************/
 #endif /* SOURCE_APP_SEND_SEND_H_ */

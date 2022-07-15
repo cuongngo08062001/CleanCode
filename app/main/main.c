@@ -44,7 +44,11 @@
 /******************************************************************************/
 #define PERIOD_SCAN_SENSORLIGHT									10000 	//	ms
 #define PERIOD_SCAN_SENSORTEMHUMI								10000	//	ms
-#define DELAY_MS												1000
+#define ONE_THOUSAND_MS_DELAY									1000
+#define VALUE_LUX_MINIMUN_EFFECT_TO_SEND_MES_TO_HC              30
+#define VALUE_LUX_MINIMUN_EFFECT_TO_WARNING                     500
+
+
 enum{
 	ENDPOINT_ONOFF_LED_ONE	= 1,
 	ENDPOINT_ONOFF_LED_TWO,
@@ -145,8 +149,8 @@ void emberAfMainInitCallback(void)
 	networkInit(mainNetworkEventHandler);
 	emberEventControlSetActive(MainStateEventControl);
 	KalmanFilterInit(2, 2, 0.001); // Initialize Kalman filter
-	emberEventControlSetDelayMS(ReadValueLightSensorControl, DELAY_MS);
-	emberEventControlSetDelayMS(ReadValueTempHumiControl,DELAY_MS);
+	emberEventControlSetDelayMS(ReadValueLightSensorControl, ONE_THOUSAND_MS_DELAY);
+	emberEventControlSetDelayMS(ReadValueTempHumiControl,ONE_THOUSAND_MS_DELAY);
 }
 /******************************************************************************/
 /**
@@ -160,7 +164,7 @@ static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPr
 {
 	switch(buttonPressState)
 		{
-		case PRESS_1:
+		case PRESS_ONE_TIME:
 			if(byButtonId == BUTTON_ONE)
 			{
 				emberAfCorePrintln("SW1: 1 time");
@@ -180,7 +184,7 @@ static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPr
 
 			}
 		break;
-		case PRESS_2:
+		case PRESS_TWO_TIMES:
 			if(byButtonId == BUTTON_ONE)
 			{
 				emberAfCorePrintln("SW1: 2 times");
@@ -198,7 +202,7 @@ static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPr
 				SEND_OnOffStateReport(ENDPOINT_ONOFF_LED_TWO, LED_OFF);
 			}
 			break;
-		case PRESS_3:
+		case PRESS_THREE_TIMES:
 			if(byButtonId == BUTTON_ONE)
 			{
 				emberAfCorePrintln("SW1: 3 time");
@@ -214,7 +218,7 @@ static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPr
 				toggleLed(LED_TWO,LED_RGB,3,200,200);
 			}
 			break;
-		case PRESS_4:
+		case PRESS_FOUR_TIMES:
 			if(byButtonId == BUTTON_ONE)
 			{
 				emberAfCorePrintln("SW1: 4 time");
@@ -224,7 +228,7 @@ static void mainButtonPressCallbackHandler(u8_t byButtonId, ButtonState buttonPr
 				emberAfCorePrintln("SW2: 4 time");
 			}
 			break;
-		case PRESS_5:
+		case PRESS_FIVE_TIMES:
 			if(byButtonId == BUTTON_ONE)
 			{
 				emberAfCorePrintln("SW1: 5 time");
@@ -253,19 +257,19 @@ static void mainButtonHoldCallbackHandler(u8_t byButtonId, ButtonState buttonHol
 {
 	switch(buttonHoldState)
 	{
-	case HOLD_1s:
+	case HOLD_ONE_SECOND:
 		emberAfCorePrintln("SW1: 1 s");
 		break;
-	case HOLD_2s:
+	case HOLD_TWO_SECONDs:
 		emberAfCorePrintln("SW1: 2 s");
 		break;
-	case HOLD_3s:
+	case HOLD_THREE_SECONDs:
 		emberAfCorePrintln("SW1: 3 s");
 		break;
-	case HOLD_4s:
+	case HOLD_FOUR_SECONDs:
 		emberAfCorePrintln("SW1: 4 s");
 		break;
-	case HOLD_5s:
+	case HOLD_FIVE_SECONDs:
 		emberAfCorePrintln("SW1: 5 s");
 		break;
 	default:
@@ -330,13 +334,13 @@ static void mainNetworkEventHandler(u8_t byNetworkResult)
 			toggleLed(LED_ONE,LED_PINK,3,300,300);
 			g_boNetworkReady = TRUE;
 			g_systemState = REPORT_STATE;
-			emberEventControlSetDelayMS(MainStateEventControl, DELAY_MS);
+			emberEventControlSetDelayMS(MainStateEventControl, ONE_THOUSAND_MS_DELAY);
 			break;
 		case NETWORK_JOIN_FAIL:
 			g_systemState = IDLE_STATE;
 			toggleLed(LED_ONE,LED_BLUE,3,300,300);
 			emberAfCorePrintln("Network Join Fail");
-			emberEventControlSetDelayMS(MainStateEventControl, DELAY_MS);
+			emberEventControlSetDelayMS(MainStateEventControl, ONE_THOUSAND_MS_DELAY);
 			break;
 		case NETWORK_JOIN_SUCCESS:
 			emberEventControlSetInactive(FindNetworkControl);
@@ -344,13 +348,13 @@ static void mainNetworkEventHandler(u8_t byNetworkResult)
 			toggleLed(LED_ONE,LED_PINK,3,300,300);
 			g_boNetworkReady =TRUE;
 			g_systemState = REPORT_STATE;
-			emberEventControlSetDelayMS(MainStateEventControl, DELAY_MS);
+			emberEventControlSetDelayMS(MainStateEventControl, ONE_THOUSAND_MS_DELAY);
 			break;
 		case NETWORK_LOST_PARENT:
 			emberAfCorePrintln("Network lost parent");
 			toggleLed(LED_ONE,LED_PINK,3,300,300);
 			g_systemState = IDLE_STATE;
-			emberEventControlSetDelayMS(MainStateEventControl, DELAY_MS);
+			emberEventControlSetDelayMS(MainStateEventControl, ONE_THOUSAND_MS_DELAY);
 			break;
 		case NETWORK_OUT_NETWORK:
 			if(g_boNetworkReady)
@@ -374,7 +378,7 @@ void FindNetworkHandler(void)
 {
 	emberEventControlSetInactive(FindNetworkControl);
 	networkFindAndJoin();
-	emberEventControlSetDelayMS(FindNetworkControl, DELAY_MS*10);
+	emberEventControlSetDelayMS(FindNetworkControl, ONE_THOUSAND_MS_DELAY*10);
 
 }
 /**
@@ -388,12 +392,12 @@ void ReadValueLightSensorHandler(void)
 	u32_t byValueLuxSecond = 0;
 //	emberEventControlSetInactive(readValueLightSensorControl);
 	u32_t byValueLuxFirst = readAdcPolling_LightSensorHandler();
-	if(abs(byValueLuxSecond - byValueLuxFirst) > 30)
+	if(abs(byValueLuxSecond - byValueLuxFirst) > VALUE_LUX_MINIMUN_EFFECT_TO_SEND_MES_TO_HC)
 		{
 		byValueLuxSecond = byValueLuxFirst;
 		SEND_LDRStateReport(ENDPOINT_LIGHT,byValueLuxSecond);
 		emberAfCorePrintln("Light:   %d lux         ",byValueLuxSecond);
-			if(byValueLuxSecond > 500)
+			if(byValueLuxSecond > VALUE_LUX_MINIMUN_EFFECT_TO_WARNING)
 			{
 				turnOnLed(LED_TWO,LED_GREEN);
 			}

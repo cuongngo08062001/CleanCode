@@ -50,7 +50,19 @@
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
+/**
+ * @func    LDRInit
+ * @brief   LDR initialize
+ * @param   None
+ * @retval  None
+ */
 void lightSensor_Init(void);
+/**
+ * @func   readAdcPolling_LightSensorHandler
+ * @brief  Read value from ADC
+ * @param  None
+ * @retval byLux
+ */
 u32_t readAdcPolling_LightSensorHandler(void);
 /******************************************************************************/
 #endif /* SOURCE_MID_LDR_LDR_H_ */

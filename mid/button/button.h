@@ -44,17 +44,17 @@
 
 typedef enum
 {
-	PRESS_1	= 1,
-	PRESS_2 ,
-	PRESS_3 ,
-	PRESS_4 ,
-	PRESS_5,
+	PRESS_ONE_TIME	= 1,
+	PRESS_TWO_TIMES ,
+	PRESS_THREE_TIMES ,
+	PRESS_FOUR_TIMES ,
+	PRESS_FIVE_TIMES,
 	PRESS_MAX = 10,
-	HOLD_1s	,
-	HOLD_2s	,
-	HOLD_3s	,
-	HOLD_4s	,
-	HOLD_5s ,
+	HOLD_ONE_SECOND	,
+	HOLD_TWO_SECONDs,
+	HOLD_THREE_SECONDs,
+	HOLD_FOUR_SECONDs,
+	HOLD_FIVE_SECONDs,
 	HOLD_MAX,
 	UNKNOWN,
 }ButtonState;
@@ -88,13 +88,13 @@ typedef void (*pButtonPressEvent_t)(u8_t byIndex, ButtonState buttonPressState);
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
+/*
+ * @func    buttonInit
+ * @brief   Initialize Button
+ * @param   pButtonHoldingEvent_t ButtonHoding
+ *          pButtonPressEvent_t ButtonPress
+ * @retval  None
+ */
 void buttonInit(pButtonHoldingEvent_t ButtonHoldingHandler,pButtonPressEvent_t ButtonPressHandler);
-/******************************************************************************/
-/******************************************************************************/
-/*                     EXPORTED TYPES and DEFINITIONS                         */
-/******************************************************************************/
-/******************************************************************************/
-/*                              PRIVATE DATA                                  */
-/******************************************************************************/
 
 #endif /* SOURCE_HARD_BUTTON_BUTTON_H_ */

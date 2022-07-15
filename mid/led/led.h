@@ -95,8 +95,38 @@ enum{
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
+/**
+ * @func    ledInit
+ * @brief   Initialize LED
+ * @param   None
+ * @retval  None
+ */
 void ledInit(void);
+/**
+ * @func    turnOffRBGLed
+ * @brief   Turn off number led
+ * @param   LedNumber ledIndex (index of Led)
+ * @retval  None
+ */
 void turnOffRBGLed(LedNumber ledIndex);
+
+/**
+ * @func    turnOnLed
+ * @brief   Turn on led
+ * @param   LedNumber index  (index of Led)
+ *          LedNumber LedColor (Color of Led: Green, Blue, Red, Pink, Yellow)
+ * @retval  None
+ */
 void turnOnLed(LedNumber index, LedNumber LedColor);
+/**
+ * @func    toggleLed
+ * @brief   toggled LED
+ * @param   LedNumber ledIndex, (index of Led)
+ *          LedColor LedColor, (Color of Led: Green, Blue, Red, Pink, Yellow)
+ *          u8_t byToggleTime, (Times of Toggle Led)
+ *          u32_t byOnTimeMs,
+ *          u32_t byOffTimeMs
+ * @retval  None
+ */
 void toggleLed(LedNumber ledIndex, LedColor LedColor, u8_t byToggleTime, u32_t byOnTimeMs, u32_t byOffTimeMs);
 #endif /* SOURCE_MID_LED_H_ */

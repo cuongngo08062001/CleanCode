@@ -203,7 +203,7 @@ u32_t Si7020_MeasureHumi(void){
 /**
  * @func    si7020_MeasureTempAndHumi
  * @brief   Measure Temp
- * @param
+ * @param   None
  * @retval  byTempValue
  */
 u32_t Si7020_MeasureTemp (void){

@@ -32,6 +32,14 @@
 #include "source/app/send/send.h"
 #include "source/app/receive/receive.h"
 /******************************************************************************/
+/*                     EXPORTED TYPES and DEFINITIONS                         */
+/******************************************************************************/
+#define VALUE_LEVEL_CONTROL_MINIMUM_TO_HIGH_LEVEL                       80
+#define VALUE_LEVEL_CONTROL_MINIMUM_TO_MEDIUM_LEVEL                     50
+#define VALUE_LEVEL_CONTROL_MINIMUM_TO_LOW_LEVEL                        00
+#define ENDPOINT_LOCAL_ONE    1
+#define ENDPOINT_LOCAL_TWO    2
+/******************************************************************************/
 /*                              PRIVATE DATA                                  */
 /******************************************************************************/
 
@@ -106,7 +114,6 @@ static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCm
 	u8_t level;
 	uint16_t transitionTime;
 	emberAfCorePrintln("ClusterID: 0x%2X", clusterCmd->apsFrame->clusterId);
-/******************************************LEVEL CONTROL LED***************************************************************************/
 		switch(commandID)
 			{
 
@@ -121,15 +128,15 @@ static bool_t RECEIVE_HandleLevelControlCluster(EmberAfClusterCommand* clusterCm
 
 					if(endPoint == 1)
 					{
-						if(level >=80)
+						if(level >= VALUE_LEVEL_CONTROL_MINIMUM_TO_HIGH_LEVEL)
 						{
 							emberAfCorePrintln("LED GREEN");
 							turnOnLed(LED_ONE, LED_GREEN);
-						}else if(level>=40)
+						}else if(level>=VALUE_LEVEL_CONTROL_MINIMUM_TO_MEDIUM_LEVEL)
 						{
 							emberAfCorePrintln("LED RED");
 							turnOnLed(LED_ONE, LED_RED);
-						}else if(level>0)
+						}else if(level>VALUE_LEVEL_CONTROL_MINIMUM_TO_LOW_LEVEL)
 						{
 							emberAfCorePrintln("LED BLUE");
 							turnOnLed(LED_ONE, LED_BLUE);
@@ -169,7 +176,7 @@ static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 
 		switch (clusterCmd->type) {
 			case EMBER_INCOMING_UNICAST:
-				if(localEndpoint == 1)
+				if(localEndpoint == ENDPOINT_LOCAL_ONE)
 				{
 				turnOffRBGLed(LED_ONE);
 				SEND_OnOffStateReport(localEndpoint, LED_OFF);
@@ -180,7 +187,7 @@ static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 						SEND_BindingInitToTarget(remoteEndpoint, localEndpoint, FALSE, IgnoreNodeID);
 					}
 				}
-				if(localEndpoint == 2)
+				if(localEndpoint == ENDPOINT_LOCAL_TWO)
 				{
 					turnOffRBGLed(LED_TWO);
 					SEND_OnOffStateReport(localEndpoint, LED_OFF);
@@ -201,7 +208,7 @@ static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 		emberAfCorePrintln("Turn on LED");
 		switch (clusterCmd->type) {
 			case EMBER_INCOMING_UNICAST:
-				if(localEndpoint == 1)
+				if(localEndpoint == ENDPOINT_LOCAL_ONE)
 				{
 					turnOnLed(LED_ONE, LED_BLUE);
 					SEND_OnOffStateReport(localEndpoint, LED_ON);
@@ -210,7 +217,7 @@ static bool_t RECEIVE_HandleOnOffCluster(EmberAfClusterCommand* clusterCmd)
 						SEND_BindingInitToTarget(remoteEndpoint, localEndpoint, TRUE, IgnoreNodeID);
 					}
 				}
-				if(localEndpoint == 2)
+				if(localEndpoint == ENDPOINT_LOCAL_TWO)
 				{
 					turnOnLed(LED_TWO, LED_BLUE);
 					SEND_OnOffStateReport(localEndpoint, LED_ON);

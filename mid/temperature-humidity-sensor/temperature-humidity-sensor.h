@@ -50,10 +50,42 @@
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
+/**
+ * @func    initI2C
+ * @brief   Initialize I2C communicate sensor
+ * @param   None
+ * @retval  None
+ */
 void initI2C(void);
+/**
+ * @func    si7020_Init
+ * @brief   Initialize si7020
+ * @param   None
+ * @retval  None
+ */
 void Si7020_Init (void);
+/**
+ * @func    si7020_Measure
+ * @brief   Measure
+ * @param   u32_t *pBuffer
+ *          u8_t byCommand
+ *          u8_t byLengthData
+ * @retval  TRUE or FALSE
+ */
 bool_t Si7020_Measure (u32_t *pBuffer, u8_t byCommand, u8_t byLengthData);
+/**
+ * @func    si7020_MeasureTempAndHumi
+ * @brief   Measure Humi
+ * @param   None
+ * @retval  byHumiValue
+ */
 u32_t Si7020_MeasureHumi (void);
+/**
+ * @func    si7020_MeasureTempAndHumi
+ * @brief   Measure Temp
+ * @param   None
+ * @retval  byTempValue
+ */
 u32_t Si7020_MeasureTemp (void);
 
 /******************************************************************************/

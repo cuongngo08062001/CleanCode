@@ -40,6 +40,7 @@ typedef enum{
 	NETWORK_LOST_PARENT,
 	NETWORK_OUT_NETWORK,
 }NetworkEvent;
+typedef void (*networkEventHandler) (NetworkEvent networkEvent);
 /******************************************************************************/
 /*                              PRIVATE DATA                                  */
 /******************************************************************************/
@@ -55,8 +56,25 @@ typedef enum{
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                               */
 /******************************************************************************/
-typedef void (*networkEventHandler) (NetworkEvent networkEvent);
+/*
+ * @function            : networkFindAndJoin
+ *
+ * @brief               : Find network
+ *
+ * @parameter           : None
+ *
+ * @ret
+ */
 void networkFindAndJoin(void);
+/*
+ * @function            : Network_Init
+ *
+ * @brief               : Handle event network.
+ *
+ * @param : networkResult (State Network)
+ *
+ * @return : None
+ */
 void networkInit(networkEventHandler networkResult);
 /******************************************************************************/
 #endif /* SOURCE_APP_NETWORK_NETWORK_H_ */
